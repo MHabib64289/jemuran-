@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR Kain Batik Fisika Real-time</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+  <style>
+    * { margin: 0; padding: 0; }
+    body { overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; }
+    
+    .ui-overlay {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      z-index: 999;
+      color: white;
+      background: linear-gradient(135deg, rgba(80,50,40,0.95), rgba(60,35,25,0.95));
+      padding: 15px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+    
+    .ui-overlay strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 5px;
+      font-weight: 800;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .status {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      font-size: 12px;
+    }
+
+    .marker-help {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 998;
+      text-align: center;
+      pointer-events: none;
+    }
+    
+    .marker-frame {
+      width: min(60vw, 250px);
+      height: min(60vw, 250px);
+      border: 3px dashed rgba(139,69,19,0.9);
+      border-radius: 20px;
+      margin: 0 auto 15px;
+      animation: pulse 2s infinite;
+      background: radial-gradient(circle, rgba(139,69,19,0.1), transparent);
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+    
+    .marker-text {
+      color: white;
+      background: linear-gradient(135deg, rgba(80,50,40,0.95), rgba(60,35,25,0.95));
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+    }
+    
+    .controls {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      z-index: 999;
+      background: rgba(0,0,0,0.85);
+      padding: 12px 15px;
+      border-radius: 8px;
+      color: white;
+      font-size: 11px;
+      pointer-events: auto;
+    }
+    
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .controls input[type="range"] {
+      width: 100px;
+    }
+    
+    .controls button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    
+    .controls button:active {
+      background: #45a049;
+    }
+    
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="ui-overlay">
+    <strong>🧵 AR Kain Batik - Simulasi Fisika</strong>
+    <div class="status" id="status">Memuat simulasi...</div>
+  </div>
+
+  <div class="marker-help" id="markerHelp">
+    <div class="marker-frame"></div>
+    <div class="marker-text">
+      📱 Arahkan kamera ke<br>
+      <strong>HIRO MARKER</strong><br>
+      untuk melihat simulasi
+    </div>
+  </div>
+
+  <div class="controls">
+    <label>
+      Gravitasi
+      <input type="range" id="gravity" min="0.5" max="2" value="0.98" step="0.1">
+    </label>
+    <label>
+      Angin
+      <input type="range" id="wind" min="0" max="100" value="30" step="10">
+    </label>
+    <button id="resetBtn">🔄 Reset Kain</button>
+  </div>
+
+  <a-scene
+    embedded
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    vr-mode-ui="enabled: false"
+    renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;">
+
+    <a-marker preset="hiro" id="marker">
+      <a-entity id="mainScene" position="0 0 0" scale="0.5 0.5 0.5">
+        
+        <!-- MODERN WOODEN RACK -->
+        <a-entity id="woodenRack">
+          <!-- Left post - modern rectangular with taper -->
+          <a-entity position="-2.7 2.4 0">
+            <a-box width="0.18" height="4.8" depth="0.18" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15">
+              <!-- Wood grain detail -->
+              <a-box width="0.19" height="0.3" depth="0.19" position="0 2.25 0" color="#3d2817" material="roughness: 0.8"></a-box>
+              <a-box width="0.19" height="0.3" depth="0.19" position="0 -2.25 0" color="#3d2817" material="roughness: 0.8"></a-box>
+            </a-box>
+            <!-- Metal cap on top -->
+            <a-cylinder radius="0.12" height="0.08" position="0 2.45 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+            <!-- Metal base plate -->
+            <a-cylinder radius="0.15" height="0.05" position="0 -0.03 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-cylinder>
+          </a-entity>
+          
+          <!-- Right post - matching left -->
+          <a-entity position="2.7 2.4 0">
+            <a-box width="0.18" height="4.8" depth="0.18" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15">
+              <a-box width="0.19" height="0.3" depth="0.19" position="0 2.25 0" color="#3d2817" material="roughness: 0.8"></a-box>
+              <a-box width="0.19" height="0.3" depth="0.19" position="0 -2.25 0" color="#3d2817" material="roughness: 0.8"></a-box>
+            </a-box>
+            <a-cylinder radius="0.12" height="0.08" position="0 2.45 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+            <a-cylinder radius="0.15" height="0.05" position="0 -0.03 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-cylinder>
+          </a-entity>
+          
+          <!-- Top horizontal bar - modern cylinder with metal ends -->
+          <a-entity position="0 4.8 0">
+            <!-- Main wooden bar -->
+            <a-cylinder id="topBar" radius="0.065" height="5.4" rotation="0 0 90" color="#3d2817" material="roughness: 0.85; metalness: 0.1"></a-cylinder>
+            
+            <!-- Metal end caps -->
+            <a-cylinder radius="0.08" height="0.12" rotation="0 0 90" position="-2.76 0 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+            <a-cylinder radius="0.08" height="0.12" rotation="0 0 90" position="2.76 0 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+            
+            <!-- Decorative metal rings -->
+            <a-torus radius="0.09" radius-tubular="0.015" rotation="0 90 0" position="-2.5 0 0" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-torus>
+            <a-torus radius="0.09" radius-tubular="0.015" rotation="0 90 0" position="2.5 0 0" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-torus>
+            <a-torus radius="0.09" radius-tubular="0.015" rotation="0 90 0" position="0 0 0" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-torus>
+          </a-entity>
+          
+          <!-- Bottom horizontal bar - modern design -->
+          <a-entity position="0 0.2 0">
+            <a-box width="5.4" height="0.15" depth="0.15" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15"></a-box>
+            <!-- Metal corner brackets -->
+            <a-box width="0.25" height="0.18" depth="0.18" position="-2.6 0 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-box>
+            <a-box width="0.25" height="0.18" depth="0.18" position="2.6 0 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-box>
+          </a-entity>
+          
+          <!-- Modern diagonal supports with metal joints -->
+          <a-entity>
+            <!-- Left diagonal -->
+            <a-box width="0.12" height="5.2" depth="0.12" position="-1.1 2.4 0" rotation="0 0 32" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15"></a-box>
+            <a-sphere radius="0.1" position="-1.1 4.65 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-sphere>
+            <a-sphere radius="0.1" position="-1.1 0.15 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-sphere>
+            
+            <!-- Right diagonal -->
+            <a-box width="0.12" height="5.2" depth="0.12" position="1.1 2.4 0" rotation="0 0 -32" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15"></a-box>
+            <a-sphere radius="0.1" position="1.1 4.65 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-sphere>
+            <a-sphere radius="0.1" position="1.1 0.15 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-sphere>
+            
+            <!-- Center support bar -->
+            <a-box width="0.1" height="3.8" depth="0.1" position="0 1.9 0" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15"></a-box>
+            <a-cylinder radius="0.08" height="0.08" position="0 3.8 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+          </a-entity>
+          
+          <!-- Decorative modern elements -->
+          <!-- Top connecting bar -->
+          <a-box width="5.6" height="0.08" depth="0.08" position="0 4.5 -0.12" color="#3d2817" material="roughness: 0.8; metalness: 0.2"></a-box>
+          
+          <!-- Metal accent strips -->
+          <a-box width="0.05" height="4.5" depth="0.05" position="-2.2 2.25 0.1" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-box>
+          <a-box width="0.05" height="4.5" depth="0.05" position="2.2 2.25 0.1" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-box>
+        </a-entity>
+
+        <!-- CLOTH MESH (will be created dynamically) -->
+        <a-entity id="clothEntity"></a-entity>
+
+        <!-- REALISTIC GRASS GROUND WITH 3D GRASS BLADES -->
+        <a-entity id="ground">
+          <!-- Main grass ground plane -->
+          <a-plane width="15" height="15" position="0 0 0" rotation="-90 0 0" color="#5a7a3a" material="roughness: 0.95; metalness: 0.0"></a-plane>
+          
+          <!-- Grass texture overlay (lighter green) -->
+          <a-plane width="15" height="15" position="0 0.005 0" rotation="-90 0 0" color="#6a8a4a" material="transparent: true; opacity: 0.7; roughness: 1"></a-plane>
+          
+          <!-- Darker grass patches (shadow areas) -->
+          <a-circle radius="2.5" position="-3 0.01 2" rotation="-90 0 0" color="#4a6a2a" material="transparent: true; opacity: 0.5; roughness: 1"></a-circle>
+          <a-circle radius="2" position="3.5 0.01 -1.5" rotation="-90 0 0" color="#4a6a2a" material="transparent: true; opacity: 0.4; roughness: 1"></a-circle>
+          <a-circle radius="2.2" position="-2 0.01 -3" rotation="-90 0 0" color="#4a6a2a" material="transparent: true; opacity: 0.45; roughness: 1"></a-circle>
+          <a-circle radius="1.8" position="2 0.01 3" rotation="-90 0 0" color="#4a6a2a" material="transparent: true; opacity: 0.4; roughness: 1"></a-circle>
+          
+          <!-- Lighter grass patches (sunny areas) -->
+          <a-circle radius="1.5" position="2.5 0.01 1.5" rotation="-90 0 0" color="#7a9a5a" material="transparent: true; opacity: 0.6; roughness: 1"></a-circle>
+          <a-circle radius="1.3" position="-3.5 0.01 -2" rotation="-90 0 0" color="#7a9a5a" material="transparent: true; opacity: 0.5; roughness: 1"></a-circle>
+          
+          <!-- Small dirt patches -->
+          <a-circle radius="0.4" position="1.2 0.015 1.5" rotation="-90 0 0" color="#8b7355" material="transparent: true; opacity: 0.7; roughness: 1"></a-circle>
+          <a-circle radius="0.35" position="-2.3 0.015 1.2" rotation="-90 0 0" color="#8b7355" material="transparent: true; opacity: 0.65; roughness: 1"></a-circle>
+          
+          <!-- Clover/flower patches -->
+          <a-circle radius="0.15" position="-2.2 0.018 1.8" rotation="-90 0 0" color="#f5f5dc" material="transparent: true; opacity: 0.8; roughness: 1"></a-circle>
+          <a-circle radius="0.13" position="3.3 0.018 2.6" rotation="-90 0 0" color="#ffffcc" material="transparent: true; opacity: 0.7; roughness: 1"></a-circle>
+        </a-entity>
+
+        <!-- 3D GRASS BLADES THAT MOVE WITH WIND -->
+        <a-entity id="grassBlades"></a-entity>
+
+        <!-- ENHANCED GROUND SHADOW & BASE -->
+        <a-circle radius="6.5" position="0 0.02 0" rotation="-90 0 0" color="#000000" material="transparent: true; opacity: 0.35; shader: flat"></a-circle>
+        <a-circle radius="3.5" position="0 0.025 0" rotation="-90 0 0" color="#000000" material="transparent: true; opacity: 0.25; shader: flat"></a-circle>
+        
+        <!-- Shadow directly under rack -->
+        <a-plane width="6" height="5" position="0 0.03 0.5" rotation="-90 0 0" color="#000000" material="transparent: true; opacity: 0.3; shader: flat"></a-plane>
+
+        <!-- ENHANCED LIGHTING -->
+        <a-light type="ambient" color="#fff8f0" intensity="0.65"></a-light>
+        <a-light type="directional" color="#ffffff" intensity="0.9" position="8 15 5"></a-light>
+        <a-light type="directional" color="#e8d5c0" intensity="0.35" position="-6 8 -5"></a-light>
+        <a-light type="point" color="#ffd9a6" intensity="0.4" position="0 3 3"></a-light>
+      </a-entity>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    // ========================================
+    // CLOTH PHYSICS SYSTEM
+    // ========================================
+    
+    const clothWidth = 5;
+    const clothHeight = 7;
+    const clothSegmentsX = 40;
+    const clothSegmentsY = 50;
+    const restDistance = clothWidth / clothSegmentsX;
+    
+    let particles = [];
+    let constraints = [];
+    let gravity = 0.98;
+    let windStrength = 30;
+    let simulationActive = false;
+    let clothMesh = null;
+    let fabricTexture = null;
+    let grassBlades = [];
+    let grassMeshes = [];
+    
+    const barY = 4.8;
+    const barRadius = 0.065;
+
+    class Particle {
+      constructor(x, y, z) {
+        this.position = new THREE.Vector3(x, y, z);
+        this.previous = new THREE.Vector3(x, y, z);
+        this.acceleration = new THREE.Vector3(0, 0, 0);
+        this.mass = 1;
+        this.pinned = false;
+      }
+
+      addForce(force) {
+        this.acceleration.add(force.clone().divideScalar(this.mass));
+      }
+
+      integrate(timesq) {
+        if (this.pinned) return;
+
+        const newPos = this.position.clone()
+          .multiplyScalar(2)
+          .sub(this.previous)
+          .add(this.acceleration.clone().multiplyScalar(timesq));
+
+        this.previous.copy(this.position);
+        this.position.copy(newPos);
+        this.acceleration.set(0, 0, 0);
+      }
+    }
+
+    class Constraint {
+      constructor(p1, p2, restDistance) {
+        this.p1 = p1;
+        this.p2 = p2;
+        this.restDistance = restDistance;
+      }
+
+      satisfy() {
+        const diff = this.p2.position.clone().sub(this.p1.position);
+        const dist = diff.length();
+        if (dist === 0) return;
+        
+        const difference = (this.restDistance - dist) / dist;
+        const offset = diff.multiplyScalar(0.5 * difference);
+
+        const m1 = this.p1.pinned ? 0 : 1;
+        const m2 = this.p2.pinned ? 0 : 1;
+        const totalMass = m1 + m2;
+        
+        if (totalMass === 0) return;
+
+        if (!this.p1.pinned) {
+          this.p1.position.sub(offset.clone().multiplyScalar(m1 / totalMass * 2));
+        }
+
+        if (!this.p2.pinned) {
+          this.p2.position.add(offset.clone().multiplyScalar(m2 / totalMass * 2));
+        }
+      }
+    }
+
+    function initClothPhysics() {
+      particles = [];
+      constraints = [];
+
+      // Create particles
+      for (let y = 0; y <= clothSegmentsY; y++) {
+        for (let x = 0; x <= clothSegmentsX; x++) {
+          const px = (x / clothSegmentsX - 0.5) * clothWidth;
+          let py, pz;
+          
+          if (y === 0) {
+            py = barY + barRadius + 0.02;
+            pz = 0;
+          } else {
+            py = barY + barRadius - (y / clothSegmentsY) * clothHeight;
+            if (y === 1) {
+              pz = barRadius * 0.8;
+            } else {
+              pz = barRadius * 0.5 * Math.exp(-(y - 1) * 0.3);
+            }
+          }
+
+          const particle = new Particle(px, py, pz);
+          
+          if (y === 0) {
+            particle.pinned = true;
+          }
+          
+          particles.push(particle);
+        }
+      }
+
+      // Create constraints
+      for (let y = 0; y <= clothSegmentsY; y++) {
+        for (let x = 0; x <= clothSegmentsX; x++) {
+          const index = y * (clothSegmentsX + 1) + x;
+          
+          if (x < clothSegmentsX) {
+            constraints.push(new Constraint(
+              particles[index],
+              particles[index + 1],
+              restDistance
+            ));
+          }
+          
+          if (y < clothSegmentsY) {
+            constraints.push(new Constraint(
+              particles[index],
+              particles[index + clothSegmentsX + 1],
+              restDistance
+            ));
+          }
+          
+          if (x < clothSegmentsX && y < clothSegmentsY) {
+            constraints.push(new Constraint(
+              particles[index],
+              particles[index + clothSegmentsX + 2],
+              restDistance * Math.sqrt(2)
+            ));
+            
+            constraints.push(new Constraint(
+              particles[index + 1],
+              particles[index + clothSegmentsX + 1],
+              restDistance * Math.sqrt(2)
+            ));
+          }
+        }
+      }
+    }
+
+    function simulateCloth(time) {
+      const timestep = 0.016;
+      const iterations = 5;
+
+      // Apply forces
+      for (let particle of particles) {
+        if (particle.pinned) continue;
+
+        // Gravity
+        particle.addForce(new THREE.Vector3(0, -gravity, 0));
+
+        // Wind
+        const windForce = new THREE.Vector3(
+          Math.sin(time * 0.5 + particle.position.y * 0.3) * 0.1,
+          0,
+          Math.sin(time * 0.7 + particle.position.x * 0.5) * 1.2
+        );
+        windForce.multiplyScalar(windStrength * 0.01);
+        particle.addForce(windForce);
+      }
+
+      // Integrate
+      for (let particle of particles) {
+        particle.integrate(timestep * timestep);
+      }
+
+      // Bar collision - improved with better penetration prevention
+      for (let particle of particles) {
+        if (particle.pinned) continue;
+
+        const dx = particle.position.x;
+        const dy = particle.position.y - barY;
+        const dz = particle.position.z;
+        
+        // Check if particle is within bar's horizontal range
+        if (Math.abs(dx) < 2.8) {
+          const distToBarCenter = Math.sqrt(dy * dy + dz * dz);
+          const threshold = barRadius + 0.12; // Increased collision margin
+          
+          if (distToBarCenter < threshold) {
+            // Calculate penetration depth
+            const penetration = threshold - distToBarCenter;
+            
+            // Calculate normal direction from bar center
+            const angle = Math.atan2(dz, dy);
+            
+            // Push particle to surface of bar with extra margin
+            const targetY = barY + Math.cos(angle) * threshold;
+            const targetZ = Math.sin(angle) * threshold;
+            
+            // Smooth correction to prevent jittering
+            particle.position.y = targetY;
+            particle.position.z = targetZ;
+            
+            // Reset previous position to prevent bounce-back
+            particle.previous.y = particle.position.y;
+            particle.previous.z = particle.position.z;
+            
+            // Add friction when sliding on bar
+            const friction = 0.92;
+            particle.previous.x = particle.position.x + (particle.previous.x - particle.position.x) * friction;
+          }
+        }
+      }
+      
+      // Additional pass: prevent cloth from wrapping inside bar
+      for (let particle of particles) {
+        if (particle.pinned) continue;
+        
+        const dx = particle.position.x;
+        const dy = particle.position.y - barY;
+        const dz = particle.position.z;
+        
+        // If particle is near bar height
+        if (Math.abs(dy) < barRadius + 0.15 && Math.abs(dx) < 2.8) {
+          const distSq = dy * dy + dz * dz;
+          const minDistSq = (barRadius + 0.12) * (barRadius + 0.12);
+          
+          // If inside the bar cylinder
+          if (distSq < minDistSq) {
+            // Force to outside based on which side it's closer to
+            const distFromCenter = Math.sqrt(distSq);
+            const pushDistance = barRadius + 0.12;
+            
+            if (distFromCenter > 0.001) {
+              const normalY = dy / distFromCenter;
+              const normalZ = dz / distFromCenter;
+              
+              particle.position.y = barY + normalY * pushDistance;
+              particle.position.z = normalZ * pushDistance;
+              particle.previous.y = particle.position.y;
+              particle.previous.z = particle.position.z;
+            } else {
+              // Push forward if exactly at center
+              particle.position.z = pushDistance;
+              particle.previous.z = pushDistance;
+            }
+          }
+        }
+      }
+
+      // Satisfy constraints
+      for (let i = 0; i < iterations; i++) {
+        for (let constraint of constraints) {
+          constraint.satisfy();
+        }
+      }
+
+      // Ground collision
+      for (let particle of particles) {
+        if (particle.position.y < 0.05) {
+          particle.position.y = 0.05;
+          particle.position.x = particle.position.x * 0.98 + particle.previous.x * 0.02;
+          particle.position.z = particle.position.z * 0.98 + particle.previous.z * 0.02;
+        }
+      }
+    }
+
+    function updateClothGeometry() {
+      if (!clothMesh) return;
+      
+      const positions = clothMesh.geometry.attributes.position.array;
+      
+      for (let i = 0; i < particles.length; i++) {
+        positions[i * 3] = particles[i].position.x;
+        positions[i * 3 + 1] = particles[i].position.y;
+        positions[i * 3 + 2] = particles[i].position.z;
+      }
+      
+      clothMesh.geometry.attributes.position.needsUpdate = true;
+      clothMesh.geometry.computeVertexNormals();
+    }
+
+    // ========================================
+    // TEXTURE & MESH CREATION
+    // ========================================
+
+    function createBatikTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 2048;
+      canvas.height = 2048;
+      const ctx = canvas.getContext('2d');
+
+      // Base cream color
+      ctx.fillStyle = '#f5e6d3';
+      ctx.fillRect(0, 0, 2048, 2048);
+
+      // Draw diagonal batik parang pattern
+      const stripeAngle = -45;
+      const stripeWidth = 140;
+      const darkStripeWidth = 120;
+      const totalWidth = stripeWidth + darkStripeWidth;
+      
+      ctx.save();
+      
+      // Draw multiple diagonal stripes
+      for (let offset = -2048; offset < 4096; offset += totalWidth) {
+        drawBatikParangStripe(ctx, offset);
+      }
+      
+      ctx.restore();
+
+      fabricTexture = new THREE.CanvasTexture(canvas);
+      fabricTexture.wrapS = THREE.RepeatWrapping;
+      fabricTexture.wrapT = THREE.RepeatWrapping;
+    }
+
+    function drawBatikParangStripe(ctx, offset) {
+      const stripeWidth = 140;
+      const darkWidth = 120;
+      
+      // === DARK STRIPE (Black/Brown with dots) ===
+      ctx.save();
+      
+      // Dark background
+      const gradient = ctx.createLinearGradient(offset, 0, offset + darkWidth, 0);
+      gradient.addColorStop(0, '#1a1410');
+      gradient.addColorStop(0.5, '#2d2520');
+      gradient.addColorStop(1, '#1a1410');
+      ctx.fillStyle = gradient;
+      
+      ctx.beginPath();
+      for (let y = -2048; y < 4096; y += 1) {
+        const x1 = offset + y;
+        const x2 = offset + darkWidth + y;
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+      }
+      ctx.fill();
+      
+      // Small golden/tan dots on dark background
+      ctx.fillStyle = '#d4a574';
+      for (let y = 0; y < 2048; y += 12) {
+        for (let x = offset; x < offset + 2048; x += 12) {
+          const diagPos = x - y;
+          if (diagPos > offset && diagPos < offset + darkWidth) {
+            // Main dots pattern
+            if ((Math.floor(y / 12) + Math.floor(x / 12)) % 3 === 0) {
+              ctx.beginPath();
+              ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            
+            // Smaller accent dots
+            if ((Math.floor(y / 12) + Math.floor(x / 12)) % 5 === 1) {
+              ctx.beginPath();
+              ctx.arc(x + 6, y + 6, 1, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+      }
+      
+      // Add tiny texture dots
+      ctx.fillStyle = '#a68860';
+      for (let i = 0; i < 500; i++) {
+        const rx = Math.random() * 2048;
+        const ry = Math.random() * 2048;
+        const diagPos = rx - ry;
+        if (diagPos > offset && diagPos < offset + darkWidth) {
+          ctx.beginPath();
+          ctx.arc(rx, ry, 0.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      
+      ctx.restore();
+      
+      // === LIGHT STRIPE (Cream with parang motif) ===
+      const lightOffset = offset + darkWidth;
+      
+      ctx.save();
+      
+      // Light background
+      ctx.fillStyle = '#f5e6d3';
+      ctx.beginPath();
+      for (let y = -2048; y < 4096; y += 1) {
+        const x1 = lightOffset + y;
+        const x2 = lightOffset + stripeWidth + y;
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+      }
+      ctx.fill();
+      
+      // Draw parang (curved blade) motifs
+      ctx.strokeStyle = '#6b4a2a';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      // Multiple rows of parang motifs
+      for (let row = -100; row < 2148; row += 70) {
+        drawParangMotif(ctx, lightOffset + 20, row);
+        drawParangMotif(ctx, lightOffset + 70, row + 35);
+      }
+      
+      // Add border lines
+      ctx.strokeStyle = '#8b6a3a';
+      ctx.lineWidth = 2;
+      
+      ctx.beginPath();
+      for (let y = -2048; y < 4096; y += 1) {
+        const x = lightOffset + y;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + 1);
+      }
+      ctx.stroke();
+      
+      ctx.beginPath();
+      for (let y = -2048; y < 4096; y += 1) {
+        const x = lightOffset + stripeWidth + y;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + 1);
+      }
+      ctx.stroke();
+      
+      ctx.restore();
+    }
+
+    function drawParangMotif(ctx, baseX, baseY) {
+      ctx.save();
+      
+      // Main curved lines (3 parallel curves like machete blade)
+      const curves = [
+        {offsetX: 0, offsetY: 0, width: 3.5},
+        {offsetX: 12, offsetY: 0, width: 3.5},
+        {offsetX: 24, offsetY: 0, width: 3.5},
+      ];
+      
+      curves.forEach(curve => {
+        ctx.strokeStyle = '#6b4a2a';
+        ctx.lineWidth = curve.width;
+        
+        ctx.beginPath();
+        ctx.moveTo(baseX + curve.offsetX, baseY);
+        
+        // Main parang curve
+        ctx.bezierCurveTo(
+          baseX + curve.offsetX + 8, baseY + 12,
+          baseX + curve.offsetX + 15, baseY + 25,
+          baseX + curve.offsetX + 18, baseY + 40
+        );
+        
+        ctx.bezierCurveTo(
+          baseX + curve.offsetX + 20, baseY + 50,
+          baseX + curve.offsetX + 18, baseY + 58,
+          baseX + curve.offsetX + 12, baseY + 65
+        );
+        
+        ctx.stroke();
+      });
+      
+      // Decorative circles between curves
+      const circles = [
+        {x: baseX + 30, y: baseY + 20, r: 6},
+        {x: baseX + 32, y: baseY + 45, r: 5},
+      ];
+      
+      circles.forEach(circle => {
+        // Outer circle
+        ctx.strokeStyle = '#6b4a2a';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Inner filled circle
+        ctx.fillStyle = '#f5e6d3';
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.r - 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.strokeStyle = '#6b4a2a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        
+        // Center dot
+        ctx.fillStyle = '#6b4a2a';
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      // Small decorative dots
+      const dots = [
+        {x: baseX + 6, y: baseY + 10},
+        {x: baseX + 18, y: baseY + 15},
+        {x: baseX + 10, y: baseY + 32},
+        {x: baseX + 22, y: baseY + 55},
+      ];
+      
+      ctx.fillStyle = '#6b4a2a';
+      dots.forEach(dot => {
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      ctx.restore();
+    }
+
+    function drawDetailedFlower(ctx, x, y, colors) {
+      // This function is no longer used with Parang pattern
+      // Kept for compatibility
+    }
+
+    function createClothMesh() {
+      const clothEntity = document.getElementById('clothEntity');
+      
+      if (!clothEntity) {
+        console.error('❌ Cloth entity not found!');
+        return;
+      }
+      
+      if (!fabricTexture) {
+        console.error('❌ Fabric texture not created!');
+        return;
+      }
+      
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array((clothSegmentsX + 1) * (clothSegmentsY + 1) * 3);
+      const uvs = new Float32Array((clothSegmentsX + 1) * (clothSegmentsY + 1) * 2);
+      const indices = [];
+
+      for (let y = 0; y <= clothSegmentsY; y++) {
+        for (let x = 0; x <= clothSegmentsX; x++) {
+          const i = y * (clothSegmentsX + 1) + x;
+          positions[i * 3] = particles[i].position.x;
+          positions[i * 3 + 1] = particles[i].position.y;
+          positions[i * 3 + 2] = particles[i].position.z;
+          
+          uvs[i * 2] = x / clothSegmentsX * 3;
+          uvs[i * 2 + 1] = (1 - y / clothSegmentsY) * 3;
+        }
+      }
+
+      for (let y = 0; y < clothSegmentsY; y++) {
+        for (let x = 0; x < clothSegmentsX; x++) {
+          const a = y * (clothSegmentsX + 1) + x;
+          const b = a + 1;
+          const c = a + clothSegmentsX + 1;
+          const d = c + 1;
+          
+          indices.push(a, b, c);
+          indices.push(b, d, c);
+        }
+      }
+
+      geometry.setIndex(indices);
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+      geometry.computeVertexNormals();
+
+      const material = new THREE.MeshStandardMaterial({
+        map: fabricTexture,
+        side: THREE.DoubleSide,
+        roughness: 0.9,
+        metalness: 0.05,
+        transparent: false
+      });
+
+      clothMesh = new THREE.Mesh(geometry, material);
+      clothMesh.castShadow = true;
+      clothMesh.receiveShadow = true;
+      clothEntity.setObject3D('mesh', clothMesh);
+      
+      console.log('✅ Cloth mesh successfully created!');
+    }
+
+    // ========================================
+    // MAIN LOOP & INITIALIZATION
+    // ========================================
+
+    function setStatus(msg) {
+      document.getElementById('status').textContent = msg;
+    }
+
+    let animationTime = 0;
+
+    function animate() {
+      if (simulationActive && clothMesh) {
+        animationTime += 0.016;
+        simulateCloth(animationTime);
+        updateClothGeometry();
+        animateGrass(animationTime);
+      }
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('load', () => {
+      setStatus('🎨 Membuat tekstur batik...');
+      
+      const scene = document.querySelector('a-scene');
+      
+      if (scene.hasLoaded) {
+        initializeCloth();
+      } else {
+        scene.addEventListener('loaded', () => {
+          initializeCloth();
+        });
+      }
+    });
+
+    function initializeCloth() {
+      createBatikTexture();
+      setStatus('🧵 Inisialisasi fisika kain...');
+      
+      setTimeout(() => {
+        initClothPhysics();
+        createClothMesh();
+        createGrassBlades();
+        setStatus('✅ Siap! Scan marker HIRO');
+        console.log('✅ Cloth mesh created:', clothMesh);
+      }, 500);
+    }
+
+    // ========================================
+    // 3D GRASS SYSTEM
+    // ========================================
+
+    function createGrassBlades() {
+      const grassContainer = document.getElementById('grassBlades');
+      if (!grassContainer) return;
+
+      // Create grass blade geometry
+      const bladeGeometry = new THREE.BufferGeometry();
+      const bladeVertices = [
+        // Bottom triangle (wider)
+        -0.02, 0, 0,
+        0.02, 0, 0,
+        0, 0.15, 0,
+      ];
+      
+      bladeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(bladeVertices, 3));
+      bladeGeometry.computeVertexNormals();
+
+      // Grass material with variations
+      const grassColors = [
+        new THREE.Color(0x5a7a3a),
+        new THREE.Color(0x6a8a4a),
+        new THREE.Color(0x4a6a2a),
+        new THREE.Color(0x7a9a5a)
+      ];
+
+      // Create grass blades in a grid
+      const grassArea = 8; // 8x8 meter area
+      const density = 15; // blades per meter
+      const totalBlades = grassArea * grassArea * density;
+
+      for (let i = 0; i < totalBlades; i++) {
+        const x = (Math.random() - 0.5) * grassArea;
+        const z = (Math.random() - 0.5) * grassArea;
+        
+        // Skip area directly under the rack
+        if (Math.abs(x) < 3 && Math.abs(z) < 1.5) {
+          if (Math.random() > 0.3) continue; // Less grass under rack
+        }
+
+        const colorIndex = Math.floor(Math.random() * grassColors.length);
+        const bladeMaterial = new THREE.MeshStandardMaterial({
+          color: grassColors[colorIndex],
+          side: THREE.DoubleSide,
+          roughness: 0.9,
+          metalness: 0
+        });
+
+        const blade = new THREE.Mesh(bladeGeometry, bladeMaterial);
+        
+        // Position
+        blade.position.set(x, 0.02, z);
+        
+        // Random rotation
+        blade.rotation.y = Math.random() * Math.PI * 2;
+        
+        // Random scale (height variation)
+        const heightScale = 0.8 + Math.random() * 0.6;
+        blade.scale.set(1, heightScale, 1);
+        
+        // Store original data for animation
+        blade.userData = {
+          originalY: blade.rotation.y,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.5 + Math.random() * 0.5,
+          intensity: 0.05 + Math.random() * 0.05
+        };
+        
+        grassBlades.push(blade);
+        grassMeshes.push(blade);
+        
+        grassContainer.object3D.add(blade);
+      }
+
+      console.log(`✅ Created ${grassBlades.length} grass blades`);
+    }
+
+    function animateGrass(time) {
+      if (!grassBlades.length) return;
+
+      // Wind parameters
+      const windSpeed = windStrength * 0.01;
+      const windFrequency = 0.5;
+      
+      grassBlades.forEach(blade => {
+        const data = blade.userData;
+        
+        // Calculate wind effect
+        const windX = Math.sin(time * windFrequency * data.speed + data.phase) * data.intensity * windSpeed;
+        const windZ = Math.cos(time * windFrequency * data.speed * 0.7 + data.phase) * data.intensity * windSpeed;
+        
+        // Apply rotation based on wind
+        blade.rotation.z = windX * 0.8;
+        blade.rotation.x = windZ * 0.5;
+        
+        // Add slight Y rotation for natural movement
+        blade.rotation.y = data.originalY + windX * 0.2;
+      });
+    }
+
+    // Controls
+    document.getElementById('gravity').addEventListener('input', (e) => {
+      gravity = parseFloat(e.target.value);
+    });
+
+    document.getElementById('wind').addEventListener('input', (e) => {
+      windStrength = parseFloat(e.target.value);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      initClothPhysics();
+      if (clothMesh) {
+        updateClothGeometry();
+      }
+      setStatus('🔄 Kain direset!');
+    });
+
+    // Marker events
+    const marker = document.querySelector('#marker');
+    
+    marker.addEventListener('markerFound', () => {
+      console.log('✅ Marker terdeteksi!');
+      document.getElementById('markerHelp').classList.add('hidden');
+      setStatus('✅ Simulasi kain berjalan!');
+      simulationActive = true;
+      
+      if (navigator.vibrate) {
+        navigator.vibrate([50, 30, 50]);
+      }
+    });
+
+    marker.addEventListener('markerLost', () => {
+      console.log('❌ Marker hilang');
+      document.getElementById('markerHelp').classList.remove('hidden');
+      setStatus('⚠️ Marker hilang - Arahkan ke marker');
+      simulationActive = false;
+    });
+
+    animate();
+  </script>
+</body>
+</html>
