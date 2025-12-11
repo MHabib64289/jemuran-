@@ -2,95 +2,43 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <title>AR Kain Batik</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR Kain Batik Fisika Real-time</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
   <style>
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    html, body { 
-      overflow: hidden; 
-      font-family: 'Segoe UI', Arial, sans-serif;
-      width: 100vw;
-      height: 100vh;
-      margin: 0;
-      padding: 0;
-      position: fixed;
-      -webkit-font-smoothing: antialiased;
-      -webkit-user-select: none;
-      user-select: none;
-      touch-action: none;
-      background: #000;
-    }
-    
-    a-scene {
-      display: block;
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      z-index: 0 !important;
-    }
-    
-    .a-canvas, canvas, video {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      bottom: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      object-fit: cover !important;
-    }
-    
-    .a-enter-vr, .a-orientation-modal {
-      display: none !important;
-    }
-    
-    #arjsDebugUIContainer {
-      display: none !important;
-    }
-    
-    /* Force video to fill screen */
-    video::-webkit-media-controls {
-      display: none !important;
-    }
+    * { margin: 0; padding: 0; }
+    body { overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; }
     
     .ui-overlay {
       position: fixed;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      z-index: 999;
       color: white;
-      background: rgba(60,35,25,0.85);
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-size: 10px;
+      background: linear-gradient(135deg, rgba(80,50,40,0.95), rgba(60,35,25,0.95));
+      padding: 15px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
       pointer-events: none;
-      white-space: nowrap;
+      backdrop-filter: blur(10px);
     }
     
     .ui-overlay strong {
-      font-size: 11px;
-      font-weight: 600;
+      display: block;
+      font-size: 18px;
+      margin-bottom: 5px;
+      font-weight: 800;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     
     .status {
-      display: inline;
-      margin-left: 5px;
-      font-size: 9px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      font-size: 12px;
     }
 
     .marker-help {
@@ -98,19 +46,19 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      z-index: 1001;
+      z-index: 998;
       text-align: center;
       pointer-events: none;
-      max-width: 90vw;
     }
     
     .marker-frame {
-      width: 140px;
-      height: 140px;
-      border: 2px dashed rgba(139,69,19,0.6);
-      border-radius: 10px;
-      margin: 0 auto 5px;
+      width: min(60vw, 250px);
+      height: min(60vw, 250px);
+      border: 3px dashed rgba(139,69,19,0.9);
+      border-radius: 20px;
+      margin: 0 auto 15px;
       animation: pulse 2s infinite;
+      background: radial-gradient(circle, rgba(139,69,19,0.1), transparent);
     }
     
     @keyframes pulse {
@@ -120,49 +68,49 @@
     
     .marker-text {
       color: white;
-      background: rgba(60,35,25,0.85);
-      padding: 6px 10px;
-      border-radius: 5px;
-      font-size: 11px;
-      font-weight: 600;
-      line-height: 1.3;
+      background: linear-gradient(135deg, rgba(80,50,40,0.95), rgba(60,35,25,0.95));
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
     }
     
     .controls {
       position: fixed;
-      bottom: 10px;
-      right: 10px;
-      z-index: 9999;
-      background: rgba(0,0,0,0.75);
-      padding: 5px 8px;
-      border-radius: 5px;
+      bottom: 15px;
+      right: 15px;
+      z-index: 999;
+      background: rgba(0,0,0,0.85);
+      padding: 12px 15px;
+      border-radius: 8px;
       color: white;
-      font-size: 9px;
+      font-size: 11px;
       pointer-events: auto;
     }
     
     .controls label {
-      display: block;
-      margin-bottom: 3px;
-      font-size: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
     }
     
     .controls input[type="range"] {
-      width: 80px;
-      height: 18px;
-      margin-left: 5px;
+      width: 100px;
     }
     
     .controls button {
       width: 100%;
-      padding: 5px;
-      margin-top: 3px;
+      padding: 8px;
+      margin-top: 5px;
       background: #4CAF50;
       color: white;
       border: none;
-      border-radius: 3px;
-      font-size: 9px;
-      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
     }
     
     .controls button:active {
@@ -174,7 +122,8 @@
 </head>
 <body>
   <div class="ui-overlay">
-    <strong>AR Batik</strong> <span class="status" id="status">Memuat...</span>
+    <strong>🧵 AR Kain Batik - Simulasi Fisika</strong>
+    <div class="status" id="status">Memuat simulasi...</div>
   </div>
 
   <div class="marker-help" id="markerHelp">
@@ -187,23 +136,25 @@
   </div>
 
   <div class="controls">
-    <label>Gravitasi <input type="range" id="gravity" min="0.5" max="2" value="0.98" step="0.1"></label>
-    <label>Angin <input type="range" id="wind" min="0" max="100" value="30" step="10"></label>
-    <button id="resetBtn">Reset</button>
+    <label>
+      Gravitasi
+      <input type="range" id="gravity" min="0.5" max="2" value="0.98" step="0.1">
+    </label>
+    <label>
+      Angin
+      <input type="range" id="wind" min="0" max="100" value="30" step="10">
+    </label>
+    <button id="resetBtn">🔄 Reset Kain</button>
   </div>
 
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; sourceWidth: 640; sourceHeight: 480; displayWidth: 640; displayHeight: 480; cameraParametersUrl: https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/data/data/camera_para.dat;"
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
     vr-mode-ui="enabled: false"
-    renderer="antialias: true; alpha: true; precision: mediump;"
-    device-orientation-permission-ui="enabled: false"
-    inspector="https://cdn.jsdelivr.net/gh/aframevr/aframe-inspector@master/dist/aframe-inspector.min.js">
-    
-    <a-assets timeout="10000"></a-assets>
+    renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;">
 
-    <a-marker preset="hiro" id="marker" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="2">
-      <a-entity id="mainScene" position="0 0 0" scale="0.2 0.2 0.2">
+    <a-marker preset="hiro" id="marker">
+      <a-entity id="mainScene" position="0 0 0" scale="0.5 0.5 0.5">
         
         <!-- MODERN WOODEN RACK -->
         <a-entity id="woodenRack">
@@ -337,8 +288,8 @@
     
     const clothWidth = 5;
     const clothHeight = 7;
-    const clothSegmentsX = 25; // Further reduced for mobile
-    const clothSegmentsY = 35; // Further reduced for mobile
+    const clothSegmentsX = 40;
+    const clothSegmentsY = 50;
     const restDistance = clothWidth / clothSegmentsX;
     
     let particles = [];
@@ -484,7 +435,7 @@
 
     function simulateCloth(time) {
       const timestep = 0.016;
-      const iterations = 4; // Reduced from 5 for mobile performance
+      const iterations = 5;
 
       // Apply forces
       for (let particle of particles) {
@@ -621,29 +572,25 @@
 
     function createBatikTexture() {
       const canvas = document.createElement('canvas');
-      // Mobile-friendly texture size
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const textureSize = isMobile ? 1024 : 2048;
-      
-      canvas.width = textureSize;
-      canvas.height = textureSize;
+      canvas.width = 2048;
+      canvas.height = 2048;
       const ctx = canvas.getContext('2d');
 
       // Base cream color
       ctx.fillStyle = '#f5e6d3';
-      ctx.fillRect(0, 0, textureSize, textureSize);
+      ctx.fillRect(0, 0, 2048, 2048);
 
       // Draw diagonal batik parang pattern
       const stripeAngle = -45;
-      const stripeWidth = isMobile ? 70 : 140;
-      const darkStripeWidth = isMobile ? 60 : 120;
+      const stripeWidth = 140;
+      const darkStripeWidth = 120;
       const totalWidth = stripeWidth + darkStripeWidth;
       
       ctx.save();
       
       // Draw multiple diagonal stripes
-      for (let offset = -textureSize; offset < textureSize * 2; offset += totalWidth) {
-        drawBatikParangStripe(ctx, offset, textureSize, stripeWidth, darkStripeWidth);
+      for (let offset = -2048; offset < 4096; offset += totalWidth) {
+        drawBatikParangStripe(ctx, offset);
       }
       
       ctx.restore();
@@ -653,7 +600,9 @@
       fabricTexture.wrapT = THREE.RepeatWrapping;
     }
 
-    function drawBatikParangStripe(ctx, offset, textureSize, stripeWidth, darkWidth) {
+    function drawBatikParangStripe(ctx, offset) {
+      const stripeWidth = 140;
+      const darkWidth = 120;
       
       // === DARK STRIPE (Black/Brown with dots) ===
       ctx.save();
@@ -666,7 +615,7 @@
       ctx.fillStyle = gradient;
       
       ctx.beginPath();
-      for (let y = -textureSize; y < textureSize * 2; y += 1) {
+      for (let y = -2048; y < 4096; y += 1) {
         const x1 = offset + y;
         const x2 = offset + darkWidth + y;
         ctx.moveTo(x1, y);
@@ -676,8 +625,8 @@
       
       // Small golden/tan dots on dark background
       ctx.fillStyle = '#d4a574';
-      for (let y = 0; y < textureSize; y += 12) {
-        for (let x = offset; x < offset + textureSize; x += 12) {
+      for (let y = 0; y < 2048; y += 12) {
+        for (let x = offset; x < offset + 2048; x += 12) {
           const diagPos = x - y;
           if (diagPos > offset && diagPos < offset + darkWidth) {
             // Main dots pattern
@@ -699,10 +648,9 @@
       
       // Add tiny texture dots
       ctx.fillStyle = '#a68860';
-      const dotCount = textureSize === 1024 ? 250 : 500;
-      for (let i = 0; i < dotCount; i++) {
-        const rx = Math.random() * textureSize;
-        const ry = Math.random() * textureSize;
+      for (let i = 0; i < 500; i++) {
+        const rx = Math.random() * 2048;
+        const ry = Math.random() * 2048;
         const diagPos = rx - ry;
         if (diagPos > offset && diagPos < offset + darkWidth) {
           ctx.beginPath();
@@ -721,7 +669,7 @@
       // Light background
       ctx.fillStyle = '#f5e6d3';
       ctx.beginPath();
-      for (let y = -textureSize; y < textureSize * 2; y += 1) {
+      for (let y = -2048; y < 4096; y += 1) {
         const x1 = lightOffset + y;
         const x2 = lightOffset + stripeWidth + y;
         ctx.moveTo(x1, y);
@@ -736,7 +684,7 @@
       ctx.lineJoin = 'round';
       
       // Multiple rows of parang motifs
-      for (let row = -100; row < textureSize + 100; row += 70) {
+      for (let row = -100; row < 2148; row += 70) {
         drawParangMotif(ctx, lightOffset + 20, row);
         drawParangMotif(ctx, lightOffset + 70, row + 35);
       }
@@ -746,7 +694,7 @@
       ctx.lineWidth = 2;
       
       ctx.beginPath();
-      for (let y = -textureSize; y < textureSize * 2; y += 1) {
+      for (let y = -2048; y < 4096; y += 1) {
         const x = lightOffset + y;
         ctx.moveTo(x, y);
         ctx.lineTo(x, y + 1);
@@ -754,7 +702,7 @@
       ctx.stroke();
       
       ctx.beginPath();
-      for (let y = -textureSize; y < textureSize * 2; y += 1) {
+      for (let y = -2048; y < 4096; y += 1) {
         const x = lightOffset + stripeWidth + y;
         ctx.moveTo(x, y);
         ctx.lineTo(x, y + 1);
@@ -935,20 +883,7 @@
     }
 
     window.addEventListener('load', () => {
-      setStatus('Memuat...');
-      
-      // Fix canvas on load
-      fixCanvasSize();
-      
-      // Keep checking and fixing canvas size
-      const checkInterval = setInterval(() => {
-        fixCanvasSize();
-      }, 500);
-      
-      // Stop checking after 10 seconds
-      setTimeout(() => {
-        clearInterval(checkInterval);
-      }, 10000);
+      setStatus('🎨 Membuat tekstur batik...');
       
       const scene = document.querySelector('a-scene');
       
@@ -957,70 +892,20 @@
       } else {
         scene.addEventListener('loaded', () => {
           initializeCloth();
-          setTimeout(fixCanvasSize, 500);
         });
       }
-    });
-    
-    function fixCanvasSize() {
-      const canvas = document.querySelector('canvas');
-      const video = document.querySelector('video');
-      const aScene = document.querySelector('a-scene');
-      
-      if (canvas) {
-        canvas.style.cssText = `
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          width: 100vw !important;
-          height: 100vh !important;
-          object-fit: cover !important;
-        `;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }
-      
-      if (video) {
-        video.style.cssText = `
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          width: 100vw !important;
-          height: 100vh !important;
-          object-fit: cover !important;
-        `;
-      }
-      
-      if (aScene) {
-        aScene.style.cssText = `
-          position: fixed !important;
-          width: 100vw !important;
-          height: 100vh !important;
-          top: 0 !important;
-          left: 0 !important;
-        `;
-      }
-    }
-    
-    // Fix on resize
-    window.addEventListener('resize', fixCanvasSize);
-    window.addEventListener('orientationchange', () => {
-      setTimeout(fixCanvasSize, 500);
     });
 
     function initializeCloth() {
       createBatikTexture();
-      setStatus('Inisialisasi...');
+      setStatus('🧵 Inisialisasi fisika kain...');
       
       setTimeout(() => {
         initClothPhysics();
         createClothMesh();
         createGrassBlades();
-        setStatus('Siap!');
+        setStatus('✅ Siap! Scan marker HIRO');
         console.log('✅ Cloth mesh created:', clothMesh);
-        
-        // Final fix after everything loaded
-        fixCanvasSize();
       }, 500);
     }
 
@@ -1053,9 +938,8 @@
       ];
 
       // Create grass blades in a grid
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const grassArea = isMobile ? 5 : 8; // Smaller area for mobile
-      const density = isMobile ? 8 : 15; // Less density for mobile
+      const grassArea = 8; // 8x8 meter area
+      const density = 15; // blades per meter
       const totalBlades = grassArea * grassArea * density;
 
       for (let i = 0; i < totalBlades; i++) {
