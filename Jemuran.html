@@ -2,43 +2,82 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>AR Kain Batik Fisika Real-time</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
   <style>
-    * { margin: 0; padding: 0; }
-    body { overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    html, body { 
+      overflow: hidden; 
+      font-family: 'Segoe UI', Arial, sans-serif;
+      width: 100vw;
+      height: 100vh;
+      position: fixed;
+      -webkit-font-smoothing: antialiased;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+    }
+    
+    a-scene {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 1 !important;
+    }
+    
+    .a-canvas {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
     
     .ui-overlay {
       position: fixed;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      z-index: 999;
+      top: 5px;
+      left: 5px;
+      right: 5px;
+      z-index: 1000;
       color: white;
-      background: linear-gradient(135deg, rgba(80,50,40,0.95), rgba(60,35,25,0.95));
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      background: linear-gradient(135deg, rgba(80,50,40,0.9), rgba(60,35,25,0.9));
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
       pointer-events: none;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(8px);
+      max-width: calc(100vw - 10px);
     }
     
     .ui-overlay strong {
       display: block;
-      font-size: 14px;
-      margin-bottom: 3px;
-      font-weight: 800;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      font-size: 13px;
+      margin-bottom: 2px;
+      font-weight: 700;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .status {
-      margin-top: 5px;
-      padding-top: 5px;
-      border-top: 1px solid rgba(255,255,255,0.3);
-      font-size: 10px;
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      font-size: 9px;
     }
 
     .marker-help {
@@ -46,19 +85,20 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      z-index: 998;
+      z-index: 1001;
       text-align: center;
       pointer-events: none;
+      max-width: 90vw;
     }
     
     .marker-frame {
-      width: min(50vw, 180px);
-      height: min(50vw, 180px);
-      border: 2px dashed rgba(139,69,19,0.8);
-      border-radius: 15px;
-      margin: 0 auto 10px;
+      width: min(45vw, 160px);
+      height: min(45vw, 160px);
+      border: 2px dashed rgba(139,69,19,0.7);
+      border-radius: 12px;
+      margin: 0 auto 8px;
       animation: pulse 2s infinite;
-      background: radial-gradient(circle, rgba(139,69,19,0.1), transparent);
+      background: radial-gradient(circle, rgba(139,69,19,0.08), transparent);
     }
     
     @keyframes pulse {
@@ -68,51 +108,54 @@
     
     .marker-text {
       color: white;
-      background: linear-gradient(135deg, rgba(80,50,40,0.95), rgba(60,35,25,0.95));
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 13px;
+      background: linear-gradient(135deg, rgba(80,50,40,0.9), rgba(60,35,25,0.9));
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
       font-weight: bold;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      line-height: 1.4;
     }
     
     .controls {
       position: fixed;
-      bottom: 10px;
-      right: 10px;
-      z-index: 999;
-      background: rgba(0,0,0,0.85);
-      padding: 8px 10px;
-      border-radius: 6px;
+      bottom: 5px;
+      right: 5px;
+      z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      padding: 6px 8px;
+      border-radius: 5px;
       color: white;
-      font-size: 10px;
+      font-size: 9px;
       pointer-events: auto;
-      max-width: 140px;
+      max-width: 120px;
     }
     
     .controls label {
       display: flex;
       align-items: center;
-      gap: 5px;
-      margin-bottom: 5px;
-      font-size: 9px;
+      gap: 4px;
+      margin-bottom: 4px;
+      font-size: 8px;
     }
     
     .controls input[type="range"] {
-      width: 70px;
+      width: 60px;
+      height: 15px;
     }
     
     .controls button {
       width: 100%;
-      padding: 6px;
-      margin-top: 3px;
+      padding: 5px;
+      margin-top: 2px;
       background: #4CAF50;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 3px;
       cursor: pointer;
-      font-size: 9px;
+      font-size: 8px;
+      font-weight: bold;
     }
     
     .controls button:active {
@@ -124,8 +167,8 @@
 </head>
 <body>
   <div class="ui-overlay">
-    <strong>🧵 AR Kain Batik - Simulasi Fisika</strong>
-    <div class="status" id="status">Memuat simulasi...</div>
+    <strong>🧵 AR Batik - Fisika</strong>
+    <div class="status" id="status">Memuat...</div>
   </div>
 
   <div class="marker-help" id="markerHelp">
@@ -151,12 +194,14 @@
 
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best;"
     vr-mode-ui="enabled: false"
-    renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; precision: medium;">
+    renderer="antialias: true; alpha: true; precision: medium; powerPreference: default;"
+    device-orientation-permission-ui="enabled: false"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
 
-    <a-marker preset="hiro" id="marker" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
-      <a-entity id="mainScene" position="0 0 0" scale="0.3 0.3 0.3">
+    <a-marker preset="hiro" id="marker" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="2">
+      <a-entity id="mainScene" position="0 0 0" scale="0.25 0.25 0.25">
         
         <!-- MODERN WOODEN RACK -->
         <a-entity id="woodenRack">
@@ -290,8 +335,8 @@
     
     const clothWidth = 5;
     const clothHeight = 7;
-    const clothSegmentsX = 30; // Reduced for mobile
-    const clothSegmentsY = 40; // Reduced for mobile
+    const clothSegmentsX = 25; // Further reduced for mobile
+    const clothSegmentsY = 35; // Further reduced for mobile
     const restDistance = clothWidth / clothSegmentsX;
     
     let particles = [];
@@ -437,7 +482,7 @@
 
     function simulateCloth(time) {
       const timestep = 0.016;
-      const iterations = 5;
+      const iterations = 4; // Reduced from 5 for mobile performance
 
       // Apply forces
       for (let particle of particles) {
@@ -944,8 +989,8 @@
 
       // Create grass blades in a grid
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const grassArea = isMobile ? 6 : 8; // Smaller area for mobile
-      const density = isMobile ? 10 : 15; // Less density for mobile
+      const grassArea = isMobile ? 5 : 8; // Smaller area for mobile
+      const density = isMobile ? 8 : 15; // Less density for mobile
       const totalBlades = grassArea * grassArea * density;
 
       for (let i = 0; i < totalBlades; i++) {
