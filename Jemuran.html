@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,24 @@
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
   <style>
-    * { margin: 0; padding: 0; }
-    body { overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; }
-    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: transparent !important;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+
     .ui-overlay {
       position: fixed;
       top: 15px;
@@ -17,27 +33,27 @@
       right: 15px;
       z-index: 999;
       color: white;
-      background: linear-gradient(135deg, rgba(80,50,40,0.95), rgba(60,35,25,0.95));
+      background: linear-gradient(135deg, rgba(80, 50, 40, 0.95), rgba(60, 35, 25, 0.95));
       padding: 15px 20px;
       border-radius: 12px;
       font-size: 14px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
       pointer-events: none;
       backdrop-filter: blur(10px);
     }
-    
+
     .ui-overlay strong {
       display: block;
       font-size: 18px;
       margin-bottom: 5px;
       font-weight: 800;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     }
-    
+
     .status {
       margin-top: 8px;
       padding-top: 8px;
-      border-top: 1px solid rgba(255,255,255,0.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
       font-size: 12px;
     }
 
@@ -50,57 +66,66 @@
       text-align: center;
       pointer-events: none;
     }
-    
+
     .marker-frame {
       width: min(60vw, 250px);
       height: min(60vw, 250px);
-      border: 3px dashed rgba(139,69,19,0.9);
+      border: 3px dashed rgba(139, 69, 19, 0.9);
       border-radius: 20px;
       margin: 0 auto 15px;
       animation: pulse 2s infinite;
-      background: radial-gradient(circle, rgba(139,69,19,0.1), transparent);
+      background: radial-gradient(circle, rgba(139, 69, 19, 0.1), transparent);
     }
-    
+
     @keyframes pulse {
-      0%, 100% { opacity: 0.5; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.05); }
+
+      0%,
+      100% {
+        opacity: 0.5;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
     }
-    
+
     .marker-text {
       color: white;
-      background: linear-gradient(135deg, rgba(80,50,40,0.95), rgba(60,35,25,0.95));
+      background: linear-gradient(135deg, rgba(80, 50, 40, 0.95), rgba(60, 35, 25, 0.95));
       padding: 15px 25px;
       border-radius: 10px;
       font-size: 15px;
       font-weight: bold;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(10px);
     }
-    
+
     .controls {
       position: fixed;
       bottom: 15px;
       right: 15px;
       z-index: 999;
-      background: rgba(0,0,0,0.85);
+      background: rgba(0, 0, 0, 0.85);
       padding: 12px 15px;
       border-radius: 8px;
       color: white;
       font-size: 11px;
       pointer-events: auto;
     }
-    
+
     .controls label {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 8px;
     }
-    
+
     .controls input[type="range"] {
       width: 100px;
     }
-    
+
     .controls button {
       width: 100%;
       padding: 8px;
@@ -112,14 +137,353 @@
       cursor: pointer;
       font-size: 11px;
     }
-    
+
     .controls button:active {
       background: #45a049;
     }
-    
-    .hidden { display: none !important; }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ========================================
+       AR.JS VIDEO & CANVAS FIX FOR MOBILE
+       ======================================== */
+
+    /* Force video to fit viewport */
+    #arjs-video,
+    video[autoplay],
+    video[playsinline] {
+      width: 100vw !important;
+      height: 100vh !important;
+      min-width: 100vw !important;
+      min-height: 100vh !important;
+      max-width: none !important;
+      max-height: none !important;
+      object-fit: cover !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: -2 !important;
+      transform: none !important;
+    }
+
+    /* A-Frame scene container */
+    a-scene,
+    a-scene.fullscreen {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: transparent !important;
+    }
+
+    /* Canvas element styling */
+    a-scene canvas,
+    .a-canvas,
+    canvas.a-canvas {
+      width: 100vw !important;
+      height: 100vh !important;
+      min-width: 100vw !important;
+      min-height: 100vh !important;
+      max-width: none !important;
+      max-height: none !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+    }
+
+    /* Video element from webcam */
+    video {
+      width: 100vw !important;
+      height: 100vh !important;
+      min-width: 100vw !important;
+      min-height: 100vh !important;
+      max-width: none !important;
+      max-height: none !important;
+      object-fit: cover !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      transform: none !important;
+    }
+
+    /* Hide AR.js loader */
+    .arjs-loader {
+      display: none !important;
+    }
+
+    /* ========================================
+       MOBILE RESPONSIVENESS
+       ======================================== */
+
+    /* Small phones (max-width: 360px) */
+    @media screen and (max-width: 360px) {
+      .ui-overlay {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        padding: 10px 12px;
+        font-size: 11px;
+        border-radius: 8px;
+      }
+
+      .ui-overlay strong {
+        font-size: 14px;
+        margin-bottom: 3px;
+      }
+
+      .status {
+        margin-top: 5px;
+        padding-top: 5px;
+        font-size: 10px;
+      }
+
+      .marker-frame {
+        width: 45vw;
+        height: 45vw;
+        border-width: 2px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+      }
+
+      .marker-text {
+        padding: 10px 15px;
+        font-size: 12px;
+        border-radius: 8px;
+      }
+
+      .controls {
+        bottom: 8px;
+        right: 8px;
+        left: 8px;
+        padding: 10px;
+        font-size: 10px;
+        border-radius: 6px;
+      }
+
+      .controls label {
+        gap: 5px;
+        margin-bottom: 6px;
+      }
+
+      .controls input[type="range"] {
+        width: 100%;
+        flex: 1;
+      }
+
+      .controls button {
+        padding: 10px;
+        font-size: 12px;
+      }
+    }
+
+    /* Regular phones (361px - 480px) */
+    @media screen and (min-width: 361px) and (max-width: 480px) {
+      .ui-overlay {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 12px 15px;
+        font-size: 12px;
+        border-radius: 10px;
+      }
+
+      .ui-overlay strong {
+        font-size: 15px;
+        margin-bottom: 4px;
+      }
+
+      .status {
+        margin-top: 6px;
+        padding-top: 6px;
+        font-size: 11px;
+      }
+
+      .marker-frame {
+        width: 50vw;
+        height: 50vw;
+        border-radius: 15px;
+        margin-bottom: 12px;
+      }
+
+      .marker-text {
+        padding: 12px 18px;
+        font-size: 13px;
+        border-radius: 8px;
+      }
+
+      .controls {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        padding: 10px 12px;
+        font-size: 11px;
+      }
+
+      .controls input[type="range"] {
+        width: 100%;
+        flex: 1;
+      }
+
+      .controls button {
+        padding: 10px;
+        font-size: 12px;
+      }
+    }
+
+    /* Large phones / Small tablets (481px - 768px) */
+    @media screen and (min-width: 481px) and (max-width: 768px) {
+      .ui-overlay {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        padding: 14px 18px;
+        font-size: 13px;
+      }
+
+      .ui-overlay strong {
+        font-size: 16px;
+      }
+
+      .marker-frame {
+        width: 55vw;
+        height: 55vw;
+        max-width: 280px;
+        max-height: 280px;
+      }
+
+      .marker-text {
+        padding: 14px 22px;
+        font-size: 14px;
+      }
+
+      .controls {
+        bottom: 12px;
+        right: 12px;
+        left: auto;
+        width: auto;
+        min-width: 180px;
+      }
+
+      .controls input[type="range"] {
+        width: 120px;
+      }
+    }
+
+    /* Landscape mode for mobile */
+    @media screen and (max-height: 500px) and (orientation: landscape) {
+      .ui-overlay {
+        top: 5px;
+        left: 5px;
+        right: auto;
+        max-width: 200px;
+        padding: 8px 12px;
+        font-size: 10px;
+      }
+
+      .ui-overlay strong {
+        font-size: 12px;
+        margin-bottom: 2px;
+      }
+
+      .status {
+        margin-top: 4px;
+        padding-top: 4px;
+        font-size: 9px;
+      }
+
+      .marker-help {
+        transform: translate(-50%, -50%) scale(0.7);
+      }
+
+      .marker-frame {
+        width: 25vh;
+        height: 25vh;
+        margin-bottom: 8px;
+      }
+
+      .marker-text {
+        padding: 8px 12px;
+        font-size: 11px;
+      }
+
+      .controls {
+        bottom: 5px;
+        right: 5px;
+        padding: 8px 10px;
+        font-size: 9px;
+      }
+
+      .controls label {
+        gap: 5px;
+        margin-bottom: 4px;
+      }
+
+      .controls input[type="range"] {
+        width: 80px;
+      }
+
+      .controls button {
+        padding: 6px;
+        font-size: 10px;
+      }
+    }
+
+    /* Touch-friendly improvements for all mobile */
+    @media screen and (max-width: 768px) {
+      .controls input[type="range"] {
+        height: 24px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      .controls input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #4CAF50;
+        cursor: pointer;
+      }
+
+      .controls input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #4CAF50;
+        cursor: pointer;
+        border: none;
+      }
+
+      .controls button {
+        min-height: 44px;
+        touch-action: manipulation;
+      }
+    }
   </style>
 </head>
+
 <body>
   <div class="ui-overlay">
     <strong>🧵 AR Kain Batik - Simulasi Fisika</strong>
@@ -147,87 +511,123 @@
     <button id="resetBtn">🔄 Reset Kain</button>
   </div>
 
-  <a-scene
-    embedded
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
-    vr-mode-ui="enabled: false"
-    renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;">
+  <a-scene embedded arjs="sourceType: webcam; 
+          sourceWidth: 640; 
+          sourceHeight: 480; 
+          displayWidth: 640; 
+          displayHeight: 480;
+          debugUIEnabled: false; 
+          detectionMode: mono_and_matrix; 
+          matrixCodeType: 3x3;
+          maxDetectionRate: 60;
+          canvasWidth: 640;
+          canvasHeight: 480;
+          patternRatio: 0.5;" vr-mode-ui="enabled: false"
+    renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; precision: mediump;" gesture-detector>
 
     <a-marker preset="hiro" id="marker">
       <a-entity id="mainScene" position="0 0 0" scale="0.5 0.5 0.5">
-        
+
         <!-- MODERN WOODEN RACK -->
         <a-entity id="woodenRack">
           <!-- Left post - modern rectangular with taper -->
           <a-entity position="-2.7 2.4 0">
             <a-box width="0.18" height="4.8" depth="0.18" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15">
               <!-- Wood grain detail -->
-              <a-box width="0.19" height="0.3" depth="0.19" position="0 2.25 0" color="#3d2817" material="roughness: 0.8"></a-box>
-              <a-box width="0.19" height="0.3" depth="0.19" position="0 -2.25 0" color="#3d2817" material="roughness: 0.8"></a-box>
+              <a-box width="0.19" height="0.3" depth="0.19" position="0 2.25 0" color="#3d2817"
+                material="roughness: 0.8"></a-box>
+              <a-box width="0.19" height="0.3" depth="0.19" position="0 -2.25 0" color="#3d2817"
+                material="roughness: 0.8"></a-box>
             </a-box>
             <!-- Metal cap on top -->
-            <a-cylinder radius="0.12" height="0.08" position="0 2.45 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+            <a-cylinder radius="0.12" height="0.08" position="0 2.45 0" color="#4a4a4a"
+              material="roughness: 0.3; metalness: 0.8"></a-cylinder>
             <!-- Metal base plate -->
-            <a-cylinder radius="0.15" height="0.05" position="0 -0.03 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-cylinder>
+            <a-cylinder radius="0.15" height="0.05" position="0 -0.03 0" color="#3a3a3a"
+              material="roughness: 0.4; metalness: 0.7"></a-cylinder>
           </a-entity>
-          
+
           <!-- Right post - matching left -->
           <a-entity position="2.7 2.4 0">
             <a-box width="0.18" height="4.8" depth="0.18" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15">
-              <a-box width="0.19" height="0.3" depth="0.19" position="0 2.25 0" color="#3d2817" material="roughness: 0.8"></a-box>
-              <a-box width="0.19" height="0.3" depth="0.19" position="0 -2.25 0" color="#3d2817" material="roughness: 0.8"></a-box>
+              <a-box width="0.19" height="0.3" depth="0.19" position="0 2.25 0" color="#3d2817"
+                material="roughness: 0.8"></a-box>
+              <a-box width="0.19" height="0.3" depth="0.19" position="0 -2.25 0" color="#3d2817"
+                material="roughness: 0.8"></a-box>
             </a-box>
-            <a-cylinder radius="0.12" height="0.08" position="0 2.45 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
-            <a-cylinder radius="0.15" height="0.05" position="0 -0.03 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-cylinder>
+            <a-cylinder radius="0.12" height="0.08" position="0 2.45 0" color="#4a4a4a"
+              material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+            <a-cylinder radius="0.15" height="0.05" position="0 -0.03 0" color="#3a3a3a"
+              material="roughness: 0.4; metalness: 0.7"></a-cylinder>
           </a-entity>
-          
+
           <!-- Top horizontal bar - modern cylinder with metal ends -->
           <a-entity position="0 4.8 0">
             <!-- Main wooden bar -->
-            <a-cylinder id="topBar" radius="0.065" height="5.4" rotation="0 0 90" color="#3d2817" material="roughness: 0.85; metalness: 0.1"></a-cylinder>
-            
+            <a-cylinder id="topBar" radius="0.065" height="5.4" rotation="0 0 90" color="#3d2817"
+              material="roughness: 0.85; metalness: 0.1"></a-cylinder>
+
             <!-- Metal end caps -->
-            <a-cylinder radius="0.08" height="0.12" rotation="0 0 90" position="-2.76 0 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
-            <a-cylinder radius="0.08" height="0.12" rotation="0 0 90" position="2.76 0 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
-            
+            <a-cylinder radius="0.08" height="0.12" rotation="0 0 90" position="-2.76 0 0" color="#4a4a4a"
+              material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+            <a-cylinder radius="0.08" height="0.12" rotation="0 0 90" position="2.76 0 0" color="#4a4a4a"
+              material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+
             <!-- Decorative metal rings -->
-            <a-torus radius="0.09" radius-tubular="0.015" rotation="0 90 0" position="-2.5 0 0" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-torus>
-            <a-torus radius="0.09" radius-tubular="0.015" rotation="0 90 0" position="2.5 0 0" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-torus>
-            <a-torus radius="0.09" radius-tubular="0.015" rotation="0 90 0" position="0 0 0" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-torus>
+            <a-torus radius="0.09" radius-tubular="0.015" rotation="0 90 0" position="-2.5 0 0" color="#5a5a5a"
+              material="roughness: 0.2; metalness: 0.9"></a-torus>
+            <a-torus radius="0.09" radius-tubular="0.015" rotation="0 90 0" position="2.5 0 0" color="#5a5a5a"
+              material="roughness: 0.2; metalness: 0.9"></a-torus>
+            <a-torus radius="0.09" radius-tubular="0.015" rotation="0 90 0" position="0 0 0" color="#5a5a5a"
+              material="roughness: 0.2; metalness: 0.9"></a-torus>
           </a-entity>
-          
+
           <!-- Bottom horizontal bar - modern design -->
           <a-entity position="0 0.2 0">
-            <a-box width="5.4" height="0.15" depth="0.15" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15"></a-box>
+            <a-box width="5.4" height="0.15" depth="0.15" color="#2d1f1a"
+              material="roughness: 0.85; metalness: 0.15"></a-box>
             <!-- Metal corner brackets -->
-            <a-box width="0.25" height="0.18" depth="0.18" position="-2.6 0 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-box>
-            <a-box width="0.25" height="0.18" depth="0.18" position="2.6 0 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-box>
+            <a-box width="0.25" height="0.18" depth="0.18" position="-2.6 0 0" color="#3a3a3a"
+              material="roughness: 0.4; metalness: 0.7"></a-box>
+            <a-box width="0.25" height="0.18" depth="0.18" position="2.6 0 0" color="#3a3a3a"
+              material="roughness: 0.4; metalness: 0.7"></a-box>
           </a-entity>
-          
+
           <!-- Modern diagonal supports with metal joints -->
           <a-entity>
             <!-- Left diagonal -->
-            <a-box width="0.12" height="5.2" depth="0.12" position="-1.1 2.4 0" rotation="0 0 32" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15"></a-box>
-            <a-sphere radius="0.1" position="-1.1 4.65 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-sphere>
-            <a-sphere radius="0.1" position="-1.1 0.15 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-sphere>
-            
+            <a-box width="0.12" height="5.2" depth="0.12" position="-1.1 2.4 0" rotation="0 0 32" color="#2d1f1a"
+              material="roughness: 0.85; metalness: 0.15"></a-box>
+            <a-sphere radius="0.1" position="-1.1 4.65 0" color="#4a4a4a"
+              material="roughness: 0.3; metalness: 0.8"></a-sphere>
+            <a-sphere radius="0.1" position="-1.1 0.15 0" color="#3a3a3a"
+              material="roughness: 0.4; metalness: 0.7"></a-sphere>
+
             <!-- Right diagonal -->
-            <a-box width="0.12" height="5.2" depth="0.12" position="1.1 2.4 0" rotation="0 0 -32" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15"></a-box>
-            <a-sphere radius="0.1" position="1.1 4.65 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-sphere>
-            <a-sphere radius="0.1" position="1.1 0.15 0" color="#3a3a3a" material="roughness: 0.4; metalness: 0.7"></a-sphere>
-            
+            <a-box width="0.12" height="5.2" depth="0.12" position="1.1 2.4 0" rotation="0 0 -32" color="#2d1f1a"
+              material="roughness: 0.85; metalness: 0.15"></a-box>
+            <a-sphere radius="0.1" position="1.1 4.65 0" color="#4a4a4a"
+              material="roughness: 0.3; metalness: 0.8"></a-sphere>
+            <a-sphere radius="0.1" position="1.1 0.15 0" color="#3a3a3a"
+              material="roughness: 0.4; metalness: 0.7"></a-sphere>
+
             <!-- Center support bar -->
-            <a-box width="0.1" height="3.8" depth="0.1" position="0 1.9 0" color="#2d1f1a" material="roughness: 0.85; metalness: 0.15"></a-box>
-            <a-cylinder radius="0.08" height="0.08" position="0 3.8 0" color="#4a4a4a" material="roughness: 0.3; metalness: 0.8"></a-cylinder>
+            <a-box width="0.1" height="3.8" depth="0.1" position="0 1.9 0" color="#2d1f1a"
+              material="roughness: 0.85; metalness: 0.15"></a-box>
+            <a-cylinder radius="0.08" height="0.08" position="0 3.8 0" color="#4a4a4a"
+              material="roughness: 0.3; metalness: 0.8"></a-cylinder>
           </a-entity>
-          
+
           <!-- Decorative modern elements -->
           <!-- Top connecting bar -->
-          <a-box width="5.6" height="0.08" depth="0.08" position="0 4.5 -0.12" color="#3d2817" material="roughness: 0.8; metalness: 0.2"></a-box>
-          
+          <a-box width="5.6" height="0.08" depth="0.08" position="0 4.5 -0.12" color="#3d2817"
+            material="roughness: 0.8; metalness: 0.2"></a-box>
+
           <!-- Metal accent strips -->
-          <a-box width="0.05" height="4.5" depth="0.05" position="-2.2 2.25 0.1" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-box>
-          <a-box width="0.05" height="4.5" depth="0.05" position="2.2 2.25 0.1" color="#5a5a5a" material="roughness: 0.2; metalness: 0.9"></a-box>
+          <a-box width="0.05" height="4.5" depth="0.05" position="-2.2 2.25 0.1" color="#5a5a5a"
+            material="roughness: 0.2; metalness: 0.9"></a-box>
+          <a-box width="0.05" height="4.5" depth="0.05" position="2.2 2.25 0.1" color="#5a5a5a"
+            material="roughness: 0.2; metalness: 0.9"></a-box>
         </a-entity>
 
         <!-- CLOTH MESH (will be created dynamically) -->
@@ -236,39 +636,54 @@
         <!-- REALISTIC GRASS GROUND WITH 3D GRASS BLADES -->
         <a-entity id="ground">
           <!-- Main grass ground plane -->
-          <a-plane width="15" height="15" position="0 0 0" rotation="-90 0 0" color="#5a7a3a" material="roughness: 0.95; metalness: 0.0"></a-plane>
-          
+          <a-plane width="15" height="15" position="0 0 0" rotation="-90 0 0" color="#5a7a3a"
+            material="roughness: 0.95; metalness: 0.0"></a-plane>
+
           <!-- Grass texture overlay (lighter green) -->
-          <a-plane width="15" height="15" position="0 0.005 0" rotation="-90 0 0" color="#6a8a4a" material="transparent: true; opacity: 0.7; roughness: 1"></a-plane>
-          
+          <a-plane width="15" height="15" position="0 0.005 0" rotation="-90 0 0" color="#6a8a4a"
+            material="transparent: true; opacity: 0.7; roughness: 1"></a-plane>
+
           <!-- Darker grass patches (shadow areas) -->
-          <a-circle radius="2.5" position="-3 0.01 2" rotation="-90 0 0" color="#4a6a2a" material="transparent: true; opacity: 0.5; roughness: 1"></a-circle>
-          <a-circle radius="2" position="3.5 0.01 -1.5" rotation="-90 0 0" color="#4a6a2a" material="transparent: true; opacity: 0.4; roughness: 1"></a-circle>
-          <a-circle radius="2.2" position="-2 0.01 -3" rotation="-90 0 0" color="#4a6a2a" material="transparent: true; opacity: 0.45; roughness: 1"></a-circle>
-          <a-circle radius="1.8" position="2 0.01 3" rotation="-90 0 0" color="#4a6a2a" material="transparent: true; opacity: 0.4; roughness: 1"></a-circle>
-          
+          <a-circle radius="2.5" position="-3 0.01 2" rotation="-90 0 0" color="#4a6a2a"
+            material="transparent: true; opacity: 0.5; roughness: 1"></a-circle>
+          <a-circle radius="2" position="3.5 0.01 -1.5" rotation="-90 0 0" color="#4a6a2a"
+            material="transparent: true; opacity: 0.4; roughness: 1"></a-circle>
+          <a-circle radius="2.2" position="-2 0.01 -3" rotation="-90 0 0" color="#4a6a2a"
+            material="transparent: true; opacity: 0.45; roughness: 1"></a-circle>
+          <a-circle radius="1.8" position="2 0.01 3" rotation="-90 0 0" color="#4a6a2a"
+            material="transparent: true; opacity: 0.4; roughness: 1"></a-circle>
+
           <!-- Lighter grass patches (sunny areas) -->
-          <a-circle radius="1.5" position="2.5 0.01 1.5" rotation="-90 0 0" color="#7a9a5a" material="transparent: true; opacity: 0.6; roughness: 1"></a-circle>
-          <a-circle radius="1.3" position="-3.5 0.01 -2" rotation="-90 0 0" color="#7a9a5a" material="transparent: true; opacity: 0.5; roughness: 1"></a-circle>
-          
+          <a-circle radius="1.5" position="2.5 0.01 1.5" rotation="-90 0 0" color="#7a9a5a"
+            material="transparent: true; opacity: 0.6; roughness: 1"></a-circle>
+          <a-circle radius="1.3" position="-3.5 0.01 -2" rotation="-90 0 0" color="#7a9a5a"
+            material="transparent: true; opacity: 0.5; roughness: 1"></a-circle>
+
           <!-- Small dirt patches -->
-          <a-circle radius="0.4" position="1.2 0.015 1.5" rotation="-90 0 0" color="#8b7355" material="transparent: true; opacity: 0.7; roughness: 1"></a-circle>
-          <a-circle radius="0.35" position="-2.3 0.015 1.2" rotation="-90 0 0" color="#8b7355" material="transparent: true; opacity: 0.65; roughness: 1"></a-circle>
-          
+          <a-circle radius="0.4" position="1.2 0.015 1.5" rotation="-90 0 0" color="#8b7355"
+            material="transparent: true; opacity: 0.7; roughness: 1"></a-circle>
+          <a-circle radius="0.35" position="-2.3 0.015 1.2" rotation="-90 0 0" color="#8b7355"
+            material="transparent: true; opacity: 0.65; roughness: 1"></a-circle>
+
           <!-- Clover/flower patches -->
-          <a-circle radius="0.15" position="-2.2 0.018 1.8" rotation="-90 0 0" color="#f5f5dc" material="transparent: true; opacity: 0.8; roughness: 1"></a-circle>
-          <a-circle radius="0.13" position="3.3 0.018 2.6" rotation="-90 0 0" color="#ffffcc" material="transparent: true; opacity: 0.7; roughness: 1"></a-circle>
+          <a-circle radius="0.15" position="-2.2 0.018 1.8" rotation="-90 0 0" color="#f5f5dc"
+            material="transparent: true; opacity: 0.8; roughness: 1"></a-circle>
+          <a-circle radius="0.13" position="3.3 0.018 2.6" rotation="-90 0 0" color="#ffffcc"
+            material="transparent: true; opacity: 0.7; roughness: 1"></a-circle>
         </a-entity>
 
         <!-- 3D GRASS BLADES THAT MOVE WITH WIND -->
         <a-entity id="grassBlades"></a-entity>
 
         <!-- ENHANCED GROUND SHADOW & BASE -->
-        <a-circle radius="6.5" position="0 0.02 0" rotation="-90 0 0" color="#000000" material="transparent: true; opacity: 0.35; shader: flat"></a-circle>
-        <a-circle radius="3.5" position="0 0.025 0" rotation="-90 0 0" color="#000000" material="transparent: true; opacity: 0.25; shader: flat"></a-circle>
-        
+        <a-circle radius="6.5" position="0 0.02 0" rotation="-90 0 0" color="#000000"
+          material="transparent: true; opacity: 0.35; shader: flat"></a-circle>
+        <a-circle radius="3.5" position="0 0.025 0" rotation="-90 0 0" color="#000000"
+          material="transparent: true; opacity: 0.25; shader: flat"></a-circle>
+
         <!-- Shadow directly under rack -->
-        <a-plane width="6" height="5" position="0 0.03 0.5" rotation="-90 0 0" color="#000000" material="transparent: true; opacity: 0.3; shader: flat"></a-plane>
+        <a-plane width="6" height="5" position="0 0.03 0.5" rotation="-90 0 0" color="#000000"
+          material="transparent: true; opacity: 0.3; shader: flat"></a-plane>
 
         <!-- ENHANCED LIGHTING -->
         <a-light type="ambient" color="#fff8f0" intensity="0.65"></a-light>
@@ -285,13 +700,13 @@
     // ========================================
     // CLOTH PHYSICS SYSTEM
     // ========================================
-    
+
     const clothWidth = 5;
     const clothHeight = 7;
     const clothSegmentsX = 40;
     const clothSegmentsY = 50;
     const restDistance = clothWidth / clothSegmentsX;
-    
+
     let particles = [];
     let constraints = [];
     let gravity = 0.98;
@@ -301,7 +716,7 @@
     let fabricTexture = null;
     let grassBlades = [];
     let grassMeshes = [];
-    
+
     const barY = 4.8;
     const barRadius = 0.065;
 
@@ -343,14 +758,14 @@
         const diff = this.p2.position.clone().sub(this.p1.position);
         const dist = diff.length();
         if (dist === 0) return;
-        
+
         const difference = (this.restDistance - dist) / dist;
         const offset = diff.multiplyScalar(0.5 * difference);
 
         const m1 = this.p1.pinned ? 0 : 1;
         const m2 = this.p2.pinned ? 0 : 1;
         const totalMass = m1 + m2;
-        
+
         if (totalMass === 0) return;
 
         if (!this.p1.pinned) {
@@ -372,7 +787,7 @@
         for (let x = 0; x <= clothSegmentsX; x++) {
           const px = (x / clothSegmentsX - 0.5) * clothWidth;
           let py, pz;
-          
+
           if (y === 0) {
             py = barY + barRadius + 0.02;
             pz = 0;
@@ -386,11 +801,11 @@
           }
 
           const particle = new Particle(px, py, pz);
-          
+
           if (y === 0) {
             particle.pinned = true;
           }
-          
+
           particles.push(particle);
         }
       }
@@ -399,7 +814,7 @@
       for (let y = 0; y <= clothSegmentsY; y++) {
         for (let x = 0; x <= clothSegmentsX; x++) {
           const index = y * (clothSegmentsX + 1) + x;
-          
+
           if (x < clothSegmentsX) {
             constraints.push(new Constraint(
               particles[index],
@@ -407,7 +822,7 @@
               restDistance
             ));
           }
-          
+
           if (y < clothSegmentsY) {
             constraints.push(new Constraint(
               particles[index],
@@ -415,14 +830,14 @@
               restDistance
             ));
           }
-          
+
           if (x < clothSegmentsX && y < clothSegmentsY) {
             constraints.push(new Constraint(
               particles[index],
               particles[index + clothSegmentsX + 2],
               restDistance * Math.sqrt(2)
             ));
-            
+
             constraints.push(new Constraint(
               particles[index + 1],
               particles[index + clothSegmentsX + 1],
@@ -466,61 +881,61 @@
         const dx = particle.position.x;
         const dy = particle.position.y - barY;
         const dz = particle.position.z;
-        
+
         // Check if particle is within bar's horizontal range
         if (Math.abs(dx) < 2.8) {
           const distToBarCenter = Math.sqrt(dy * dy + dz * dz);
           const threshold = barRadius + 0.12; // Increased collision margin
-          
+
           if (distToBarCenter < threshold) {
             // Calculate penetration depth
             const penetration = threshold - distToBarCenter;
-            
+
             // Calculate normal direction from bar center
             const angle = Math.atan2(dz, dy);
-            
+
             // Push particle to surface of bar with extra margin
             const targetY = barY + Math.cos(angle) * threshold;
             const targetZ = Math.sin(angle) * threshold;
-            
+
             // Smooth correction to prevent jittering
             particle.position.y = targetY;
             particle.position.z = targetZ;
-            
+
             // Reset previous position to prevent bounce-back
             particle.previous.y = particle.position.y;
             particle.previous.z = particle.position.z;
-            
+
             // Add friction when sliding on bar
             const friction = 0.92;
             particle.previous.x = particle.position.x + (particle.previous.x - particle.position.x) * friction;
           }
         }
       }
-      
+
       // Additional pass: prevent cloth from wrapping inside bar
       for (let particle of particles) {
         if (particle.pinned) continue;
-        
+
         const dx = particle.position.x;
         const dy = particle.position.y - barY;
         const dz = particle.position.z;
-        
+
         // If particle is near bar height
         if (Math.abs(dy) < barRadius + 0.15 && Math.abs(dx) < 2.8) {
           const distSq = dy * dy + dz * dz;
           const minDistSq = (barRadius + 0.12) * (barRadius + 0.12);
-          
+
           // If inside the bar cylinder
           if (distSq < minDistSq) {
             // Force to outside based on which side it's closer to
             const distFromCenter = Math.sqrt(distSq);
             const pushDistance = barRadius + 0.12;
-            
+
             if (distFromCenter > 0.001) {
               const normalY = dy / distFromCenter;
               const normalZ = dz / distFromCenter;
-              
+
               particle.position.y = barY + normalY * pushDistance;
               particle.position.z = normalZ * pushDistance;
               particle.previous.y = particle.position.y;
@@ -553,15 +968,15 @@
 
     function updateClothGeometry() {
       if (!clothMesh) return;
-      
+
       const positions = clothMesh.geometry.attributes.position.array;
-      
+
       for (let i = 0; i < particles.length; i++) {
         positions[i * 3] = particles[i].position.x;
         positions[i * 3 + 1] = particles[i].position.y;
         positions[i * 3 + 2] = particles[i].position.z;
       }
-      
+
       clothMesh.geometry.attributes.position.needsUpdate = true;
       clothMesh.geometry.computeVertexNormals();
     }
@@ -585,14 +1000,14 @@
       const stripeWidth = 140;
       const darkStripeWidth = 120;
       const totalWidth = stripeWidth + darkStripeWidth;
-      
+
       ctx.save();
-      
+
       // Draw multiple diagonal stripes
       for (let offset = -2048; offset < 4096; offset += totalWidth) {
         drawBatikParangStripe(ctx, offset);
       }
-      
+
       ctx.restore();
 
       fabricTexture = new THREE.CanvasTexture(canvas);
@@ -603,17 +1018,17 @@
     function drawBatikParangStripe(ctx, offset) {
       const stripeWidth = 140;
       const darkWidth = 120;
-      
+
       // === DARK STRIPE (Black/Brown with dots) ===
       ctx.save();
-      
+
       // Dark background
       const gradient = ctx.createLinearGradient(offset, 0, offset + darkWidth, 0);
       gradient.addColorStop(0, '#1a1410');
       gradient.addColorStop(0.5, '#2d2520');
       gradient.addColorStop(1, '#1a1410');
       ctx.fillStyle = gradient;
-      
+
       ctx.beginPath();
       for (let y = -2048; y < 4096; y += 1) {
         const x1 = offset + y;
@@ -622,7 +1037,7 @@
         ctx.lineTo(x2, y);
       }
       ctx.fill();
-      
+
       // Small golden/tan dots on dark background
       ctx.fillStyle = '#d4a574';
       for (let y = 0; y < 2048; y += 12) {
@@ -635,7 +1050,7 @@
               ctx.arc(x, y, 1.5, 0, Math.PI * 2);
               ctx.fill();
             }
-            
+
             // Smaller accent dots
             if ((Math.floor(y / 12) + Math.floor(x / 12)) % 5 === 1) {
               ctx.beginPath();
@@ -645,7 +1060,7 @@
           }
         }
       }
-      
+
       // Add tiny texture dots
       ctx.fillStyle = '#a68860';
       for (let i = 0; i < 500; i++) {
@@ -658,14 +1073,14 @@
           ctx.fill();
         }
       }
-      
+
       ctx.restore();
-      
+
       // === LIGHT STRIPE (Cream with parang motif) ===
       const lightOffset = offset + darkWidth;
-      
+
       ctx.save();
-      
+
       // Light background
       ctx.fillStyle = '#f5e6d3';
       ctx.beginPath();
@@ -676,23 +1091,23 @@
         ctx.lineTo(x2, y);
       }
       ctx.fill();
-      
+
       // Draw parang (curved blade) motifs
       ctx.strokeStyle = '#6b4a2a';
       ctx.lineWidth = 4;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      
+
       // Multiple rows of parang motifs
       for (let row = -100; row < 2148; row += 70) {
         drawParangMotif(ctx, lightOffset + 20, row);
         drawParangMotif(ctx, lightOffset + 70, row + 35);
       }
-      
+
       // Add border lines
       ctx.strokeStyle = '#8b6a3a';
       ctx.lineWidth = 2;
-      
+
       ctx.beginPath();
       for (let y = -2048; y < 4096; y += 1) {
         const x = lightOffset + y;
@@ -700,7 +1115,7 @@
         ctx.lineTo(x, y + 1);
       }
       ctx.stroke();
-      
+
       ctx.beginPath();
       for (let y = -2048; y < 4096; y += 1) {
         const x = lightOffset + stripeWidth + y;
@@ -708,49 +1123,49 @@
         ctx.lineTo(x, y + 1);
       }
       ctx.stroke();
-      
+
       ctx.restore();
     }
 
     function drawParangMotif(ctx, baseX, baseY) {
       ctx.save();
-      
+
       // Main curved lines (3 parallel curves like machete blade)
       const curves = [
-        {offsetX: 0, offsetY: 0, width: 3.5},
-        {offsetX: 12, offsetY: 0, width: 3.5},
-        {offsetX: 24, offsetY: 0, width: 3.5},
+        { offsetX: 0, offsetY: 0, width: 3.5 },
+        { offsetX: 12, offsetY: 0, width: 3.5 },
+        { offsetX: 24, offsetY: 0, width: 3.5 },
       ];
-      
+
       curves.forEach(curve => {
         ctx.strokeStyle = '#6b4a2a';
         ctx.lineWidth = curve.width;
-        
+
         ctx.beginPath();
         ctx.moveTo(baseX + curve.offsetX, baseY);
-        
+
         // Main parang curve
         ctx.bezierCurveTo(
           baseX + curve.offsetX + 8, baseY + 12,
           baseX + curve.offsetX + 15, baseY + 25,
           baseX + curve.offsetX + 18, baseY + 40
         );
-        
+
         ctx.bezierCurveTo(
           baseX + curve.offsetX + 20, baseY + 50,
           baseX + curve.offsetX + 18, baseY + 58,
           baseX + curve.offsetX + 12, baseY + 65
         );
-        
+
         ctx.stroke();
       });
-      
+
       // Decorative circles between curves
       const circles = [
-        {x: baseX + 30, y: baseY + 20, r: 6},
-        {x: baseX + 32, y: baseY + 45, r: 5},
+        { x: baseX + 30, y: baseY + 20, r: 6 },
+        { x: baseX + 32, y: baseY + 45, r: 5 },
       ];
-      
+
       circles.forEach(circle => {
         // Outer circle
         ctx.strokeStyle = '#6b4a2a';
@@ -758,39 +1173,39 @@
         ctx.beginPath();
         ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
         ctx.stroke();
-        
+
         // Inner filled circle
         ctx.fillStyle = '#f5e6d3';
         ctx.beginPath();
         ctx.arc(circle.x, circle.y, circle.r - 2, 0, Math.PI * 2);
         ctx.fill();
-        
+
         ctx.strokeStyle = '#6b4a2a';
         ctx.lineWidth = 1.5;
         ctx.stroke();
-        
+
         // Center dot
         ctx.fillStyle = '#6b4a2a';
         ctx.beginPath();
         ctx.arc(circle.x, circle.y, 1.5, 0, Math.PI * 2);
         ctx.fill();
       });
-      
+
       // Small decorative dots
       const dots = [
-        {x: baseX + 6, y: baseY + 10},
-        {x: baseX + 18, y: baseY + 15},
-        {x: baseX + 10, y: baseY + 32},
-        {x: baseX + 22, y: baseY + 55},
+        { x: baseX + 6, y: baseY + 10 },
+        { x: baseX + 18, y: baseY + 15 },
+        { x: baseX + 10, y: baseY + 32 },
+        { x: baseX + 22, y: baseY + 55 },
       ];
-      
+
       ctx.fillStyle = '#6b4a2a';
       dots.forEach(dot => {
         ctx.beginPath();
         ctx.arc(dot.x, dot.y, 2, 0, Math.PI * 2);
         ctx.fill();
       });
-      
+
       ctx.restore();
     }
 
@@ -801,17 +1216,17 @@
 
     function createClothMesh() {
       const clothEntity = document.getElementById('clothEntity');
-      
+
       if (!clothEntity) {
         console.error('❌ Cloth entity not found!');
         return;
       }
-      
+
       if (!fabricTexture) {
         console.error('❌ Fabric texture not created!');
         return;
       }
-      
+
       const geometry = new THREE.BufferGeometry();
       const positions = new Float32Array((clothSegmentsX + 1) * (clothSegmentsY + 1) * 3);
       const uvs = new Float32Array((clothSegmentsX + 1) * (clothSegmentsY + 1) * 2);
@@ -823,7 +1238,7 @@
           positions[i * 3] = particles[i].position.x;
           positions[i * 3 + 1] = particles[i].position.y;
           positions[i * 3 + 2] = particles[i].position.z;
-          
+
           uvs[i * 2] = x / clothSegmentsX * 3;
           uvs[i * 2 + 1] = (1 - y / clothSegmentsY) * 3;
         }
@@ -835,7 +1250,7 @@
           const b = a + 1;
           const c = a + clothSegmentsX + 1;
           const d = c + 1;
-          
+
           indices.push(a, b, c);
           indices.push(b, d, c);
         }
@@ -858,7 +1273,7 @@
       clothMesh.castShadow = true;
       clothMesh.receiveShadow = true;
       clothEntity.setObject3D('mesh', clothMesh);
-      
+
       console.log('✅ Cloth mesh successfully created!');
     }
 
@@ -884,9 +1299,9 @@
 
     window.addEventListener('load', () => {
       setStatus('🎨 Membuat tekstur batik...');
-      
+
       const scene = document.querySelector('a-scene');
-      
+
       if (scene.hasLoaded) {
         initializeCloth();
       } else {
@@ -899,7 +1314,7 @@
     function initializeCloth() {
       createBatikTexture();
       setStatus('🧵 Inisialisasi fisika kain...');
-      
+
       setTimeout(() => {
         initClothPhysics();
         createClothMesh();
@@ -925,7 +1340,7 @@
         0.02, 0, 0,
         0, 0.15, 0,
       ];
-      
+
       bladeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(bladeVertices, 3));
       bladeGeometry.computeVertexNormals();
 
@@ -945,7 +1360,7 @@
       for (let i = 0; i < totalBlades; i++) {
         const x = (Math.random() - 0.5) * grassArea;
         const z = (Math.random() - 0.5) * grassArea;
-        
+
         // Skip area directly under the rack
         if (Math.abs(x) < 3 && Math.abs(z) < 1.5) {
           if (Math.random() > 0.3) continue; // Less grass under rack
@@ -960,17 +1375,17 @@
         });
 
         const blade = new THREE.Mesh(bladeGeometry, bladeMaterial);
-        
+
         // Position
         blade.position.set(x, 0.02, z);
-        
+
         // Random rotation
         blade.rotation.y = Math.random() * Math.PI * 2;
-        
+
         // Random scale (height variation)
         const heightScale = 0.8 + Math.random() * 0.6;
         blade.scale.set(1, heightScale, 1);
-        
+
         // Store original data for animation
         blade.userData = {
           originalY: blade.rotation.y,
@@ -978,10 +1393,10 @@
           speed: 0.5 + Math.random() * 0.5,
           intensity: 0.05 + Math.random() * 0.05
         };
-        
+
         grassBlades.push(blade);
         grassMeshes.push(blade);
-        
+
         grassContainer.object3D.add(blade);
       }
 
@@ -994,18 +1409,18 @@
       // Wind parameters
       const windSpeed = windStrength * 0.01;
       const windFrequency = 0.5;
-      
+
       grassBlades.forEach(blade => {
         const data = blade.userData;
-        
+
         // Calculate wind effect
         const windX = Math.sin(time * windFrequency * data.speed + data.phase) * data.intensity * windSpeed;
         const windZ = Math.cos(time * windFrequency * data.speed * 0.7 + data.phase) * data.intensity * windSpeed;
-        
+
         // Apply rotation based on wind
         blade.rotation.z = windX * 0.8;
         blade.rotation.x = windZ * 0.5;
-        
+
         // Add slight Y rotation for natural movement
         blade.rotation.y = data.originalY + windX * 0.2;
       });
@@ -1030,13 +1445,13 @@
 
     // Marker events
     const marker = document.querySelector('#marker');
-    
+
     marker.addEventListener('markerFound', () => {
       console.log('✅ Marker terdeteksi!');
       document.getElementById('markerHelp').classList.add('hidden');
       setStatus('✅ Simulasi kain berjalan!');
       simulationActive = true;
-      
+
       if (navigator.vibrate) {
         navigator.vibrate([50, 30, 50]);
       }
@@ -1052,4 +1467,5 @@
     animate();
   </script>
 </body>
+
 </html>
