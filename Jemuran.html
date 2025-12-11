@@ -288,8 +288,8 @@
     
     const clothWidth = 5;
     const clothHeight = 7;
-    const clothSegmentsX = 40;
-    const clothSegmentsY = 50;
+    const clothSegmentsX = 30; // Reduced for mobile
+    const clothSegmentsY = 40; // Reduced for mobile
     const restDistance = clothWidth / clothSegmentsX;
     
     let particles = [];
@@ -572,25 +572,29 @@
 
     function createBatikTexture() {
       const canvas = document.createElement('canvas');
-      canvas.width = 2048;
-      canvas.height = 2048;
+      // Mobile-friendly texture size
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const textureSize = isMobile ? 1024 : 2048;
+      
+      canvas.width = textureSize;
+      canvas.height = textureSize;
       const ctx = canvas.getContext('2d');
 
       // Base cream color
       ctx.fillStyle = '#f5e6d3';
-      ctx.fillRect(0, 0, 2048, 2048);
+      ctx.fillRect(0, 0, textureSize, textureSize);
 
       // Draw diagonal batik parang pattern
       const stripeAngle = -45;
-      const stripeWidth = 140;
-      const darkStripeWidth = 120;
+      const stripeWidth = isMobile ? 70 : 140;
+      const darkStripeWidth = isMobile ? 60 : 120;
       const totalWidth = stripeWidth + darkStripeWidth;
       
       ctx.save();
       
       // Draw multiple diagonal stripes
-      for (let offset = -2048; offset < 4096; offset += totalWidth) {
-        drawBatikParangStripe(ctx, offset);
+      for (let offset = -textureSize; offset < textureSize * 2; offset += totalWidth) {
+        drawBatikParangStripe(ctx, offset, textureSize, stripeWidth, darkStripeWidth);
       }
       
       ctx.restore();
@@ -600,9 +604,7 @@
       fabricTexture.wrapT = THREE.RepeatWrapping;
     }
 
-    function drawBatikParangStripe(ctx, offset) {
-      const stripeWidth = 140;
-      const darkWidth = 120;
+    function drawBatikParangStripe(ctx, offset, textureSize, stripeWidth, darkWidth) {
       
       // === DARK STRIPE (Black/Brown with dots) ===
       ctx.save();
@@ -615,7 +617,7 @@
       ctx.fillStyle = gradient;
       
       ctx.beginPath();
-      for (let y = -2048; y < 4096; y += 1) {
+      for (let y = -textureSize; y < textureSize * 2; y += 1) {
         const x1 = offset + y;
         const x2 = offset + darkWidth + y;
         ctx.moveTo(x1, y);
@@ -625,8 +627,8 @@
       
       // Small golden/tan dots on dark background
       ctx.fillStyle = '#d4a574';
-      for (let y = 0; y < 2048; y += 12) {
-        for (let x = offset; x < offset + 2048; x += 12) {
+      for (let y = 0; y < textureSize; y += 12) {
+        for (let x = offset; x < offset + textureSize; x += 12) {
           const diagPos = x - y;
           if (diagPos > offset && diagPos < offset + darkWidth) {
             // Main dots pattern
@@ -648,9 +650,10 @@
       
       // Add tiny texture dots
       ctx.fillStyle = '#a68860';
-      for (let i = 0; i < 500; i++) {
-        const rx = Math.random() * 2048;
-        const ry = Math.random() * 2048;
+      const dotCount = textureSize === 1024 ? 250 : 500;
+      for (let i = 0; i < dotCount; i++) {
+        const rx = Math.random() * textureSize;
+        const ry = Math.random() * textureSize;
         const diagPos = rx - ry;
         if (diagPos > offset && diagPos < offset + darkWidth) {
           ctx.beginPath();
@@ -669,7 +672,7 @@
       // Light background
       ctx.fillStyle = '#f5e6d3';
       ctx.beginPath();
-      for (let y = -2048; y < 4096; y += 1) {
+      for (let y = -textureSize; y < textureSize * 2; y += 1) {
         const x1 = lightOffset + y;
         const x2 = lightOffset + stripeWidth + y;
         ctx.moveTo(x1, y);
@@ -684,7 +687,7 @@
       ctx.lineJoin = 'round';
       
       // Multiple rows of parang motifs
-      for (let row = -100; row < 2148; row += 70) {
+      for (let row = -100; row < textureSize + 100; row += 70) {
         drawParangMotif(ctx, lightOffset + 20, row);
         drawParangMotif(ctx, lightOffset + 70, row + 35);
       }
@@ -694,7 +697,7 @@
       ctx.lineWidth = 2;
       
       ctx.beginPath();
-      for (let y = -2048; y < 4096; y += 1) {
+      for (let y = -textureSize; y < textureSize * 2; y += 1) {
         const x = lightOffset + y;
         ctx.moveTo(x, y);
         ctx.lineTo(x, y + 1);
@@ -702,7 +705,7 @@
       ctx.stroke();
       
       ctx.beginPath();
-      for (let y = -2048; y < 4096; y += 1) {
+      for (let y = -textureSize; y < textureSize * 2; y += 1) {
         const x = lightOffset + stripeWidth + y;
         ctx.moveTo(x, y);
         ctx.lineTo(x, y + 1);
@@ -938,8 +941,9 @@
       ];
 
       // Create grass blades in a grid
-      const grassArea = 8; // 8x8 meter area
-      const density = 15; // blades per meter
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const grassArea = isMobile ? 6 : 8; // Smaller area for mobile
+      const density = isMobile ? 10 : 15; // Less density for mobile
       const totalBlades = grassArea * grassArea * density;
 
       for (let i = 0; i < totalBlades; i++) {
