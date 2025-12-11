@@ -21,32 +21,49 @@
       font-family: 'Segoe UI', Arial, sans-serif;
       width: 100vw;
       height: 100vh;
+      margin: 0;
+      padding: 0;
       position: fixed;
       -webkit-font-smoothing: antialiased;
       -webkit-user-select: none;
       user-select: none;
       touch-action: none;
+      background: #000;
     }
     
     a-scene {
+      display: block;
       position: fixed !important;
       top: 0 !important;
       left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 1 !important;
+      width: 100% !important;
+      height: 100% !important;
+      z-index: 0 !important;
     }
     
-    .a-canvas, canvas {
+    .a-canvas, canvas, video {
       position: fixed !important;
       top: 0 !important;
       left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
       object-fit: cover !important;
     }
     
+    .a-enter-vr, .a-orientation-modal {
+      display: none !important;
+    }
+    
     #arjsDebugUIContainer {
+      display: none !important;
+    }
+    
+    /* Force video to fill screen */
+    video::-webkit-media-controls {
       display: none !important;
     }
     
@@ -177,10 +194,13 @@
 
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; sourceWidth: 1280; sourceHeight: 960; displayWidth: 1280; displayHeight: 960;"
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; sourceWidth: 640; sourceHeight: 480; displayWidth: 640; displayHeight: 480; cameraParametersUrl: https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/data/data/camera_para.dat;"
     vr-mode-ui="enabled: false"
-    renderer="antialias: true; alpha: true; precision: medium; powerPreference: default;"
-    device-orientation-permission-ui="enabled: false">
+    renderer="antialias: true; alpha: true; precision: mediump;"
+    device-orientation-permission-ui="enabled: false"
+    inspector="https://cdn.jsdelivr.net/gh/aframevr/aframe-inspector@master/dist/aframe-inspector.min.js">
+    
+    <a-assets timeout="10000"></a-assets>
 
     <a-marker preset="hiro" id="marker" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="2">
       <a-entity id="mainScene" position="0 0 0" scale="0.2 0.2 0.2">
@@ -917,26 +937,18 @@
     window.addEventListener('load', () => {
       setStatus('Memuat...');
       
-      // Force canvas to full screen
-      setTimeout(() => {
-        const canvas = document.querySelector('canvas');
-        const aScene = document.querySelector('a-scene');
-        
-        if (canvas) {
-          canvas.style.position = 'fixed';
-          canvas.style.top = '0';
-          canvas.style.left = '0';
-          canvas.style.width = '100vw';
-          canvas.style.height = '100vh';
-          canvas.style.objectFit = 'cover';
-        }
-        
-        if (aScene) {
-          aScene.style.position = 'fixed';
-          aScene.style.width = '100vw';
-          aScene.style.height = '100vh';
-        }
+      // Fix canvas on load
+      fixCanvasSize();
+      
+      // Keep checking and fixing canvas size
+      const checkInterval = setInterval(() => {
+        fixCanvasSize();
       }, 500);
+      
+      // Stop checking after 10 seconds
+      setTimeout(() => {
+        clearInterval(checkInterval);
+      }, 10000);
       
       const scene = document.querySelector('a-scene');
       
@@ -945,8 +957,55 @@
       } else {
         scene.addEventListener('loaded', () => {
           initializeCloth();
+          setTimeout(fixCanvasSize, 500);
         });
       }
+    });
+    
+    function fixCanvasSize() {
+      const canvas = document.querySelector('canvas');
+      const video = document.querySelector('video');
+      const aScene = document.querySelector('a-scene');
+      
+      if (canvas) {
+        canvas.style.cssText = `
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          object-fit: cover !important;
+        `;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      
+      if (video) {
+        video.style.cssText = `
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          object-fit: cover !important;
+        `;
+      }
+      
+      if (aScene) {
+        aScene.style.cssText = `
+          position: fixed !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          top: 0 !important;
+          left: 0 !important;
+        `;
+      }
+    }
+    
+    // Fix on resize
+    window.addEventListener('resize', fixCanvasSize);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(fixCanvasSize, 500);
     });
 
     function initializeCloth() {
@@ -960,14 +1019,8 @@
         setStatus('Siap!');
         console.log('✅ Cloth mesh created:', clothMesh);
         
-        // Force canvas resize
-        setTimeout(() => {
-          const canvas = document.querySelector('canvas');
-          if (canvas) {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-          }
-        }, 100);
+        // Final fix after everything loaded
+        fixCanvasSize();
       }, 500);
     }
 
